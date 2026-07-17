@@ -1,7 +1,8 @@
 # Python
 .venv/
 __pycache__/
-backend/storage/          # generated index (index.npz + chunks.jsonl)
+# generated index (index.npz + chunks.jsonl)
+backend/storage/
 
 # Node (frontend, once scaffolded)
 node_modules/

@@ -46,9 +46,9 @@ Real data before the pipeline, so chunk/retrieve/budget test against it.
 
 ## Phase 4 — Ingestion → [architecture.md#ingestion](architecture.md#ingestion)
 
-- [ ] `rag/chunk.py`: heading-aware split + overlap, tests green
-- [ ] `rag/store.py`: save/load index + chunk metadata; round-trip test
-- [ ] `rag/ingest.py`: CLI, prints file/chunk/token counts; run live once, sanity-check numbers
+- [x] `rag/chunk.py`: heading-aware split + overlap, tests green
+- [x] `rag/store.py`: save/load index + chunk metadata; round-trip test
+- [x] `rag/ingest.py`: CLI, prints file/chunk/token counts; run live once, sanity-check numbers
 
 ## Phase 5 — Retrieval + budget **[CORE]** → [architecture.md#budget](architecture.md#budget)
 
