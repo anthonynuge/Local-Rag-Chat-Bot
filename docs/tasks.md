@@ -24,12 +24,12 @@ Status: `[ ]` todo · `[x]` done · `[-]` deferred / won't do (add reason + when
 Proves the service boots before any logic exists; every later phase lands on
 rails that already serve traffic.
 
-- [ ] `main.py`: FastAPI boots under uvicorn; `GET /api/health` returns 200
-- [ ] Stub `POST /api/chat`: streams a canned SSE sequence per the contract
+- [x] `main.py`: FastAPI boots under uvicorn; `GET /api/health` returns 200
+- [x] Stub `POST /api/chat`: streams a canned SSE sequence per the contract
       (token → citations → done) — frontend can integrate from day one
-- [ ] CORS for the frontend origin
+- [x] CORS for the frontend origin
 - [ ] `scripts/dev.ps1`: start backend + frontend in two terminals (used every day, not just demo day)
-- [ ] Test: health returns 200; stub emits contract-shaped events
+- [x] Test: health returns 200; stub emits contract-shaped events
 
 ## Phase 2 — Sample corpus
 
