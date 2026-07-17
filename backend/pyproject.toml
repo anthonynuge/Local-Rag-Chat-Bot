@@ -1,0 +1,22 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Local RAG chat with a 6K context budget"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.139.2",
+    "numpy>=2.5.1",
+    "ollama>=0.6.2",
+    "tiktoken>=0.13.0",
+    "uvicorn>=0.51.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]      # so `import rag`, `import main` resolve when run from backend/
+testpaths = ["tests"]   # bare `uv run pytest` finds them

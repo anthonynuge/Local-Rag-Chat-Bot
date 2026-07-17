@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+backend/storage/          # generated index (index.npz + chunks.jsonl)
+
+# Node (frontend, once scaffolded)
+node_modules/
+dist/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
