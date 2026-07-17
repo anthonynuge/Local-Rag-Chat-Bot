@@ -15,7 +15,7 @@ Status: `[ ]` todo · `[x]` done · `[-]` deferred / won't do (add reason + when
 - [ ] Repo layout: `backend/` (uv project), `docs/`; `frontend/`, `scripts/` added when their phase lands
 - [ ] Root `.gitignore` (`.venv`, `__pycache__`, `backend/storage/`, node)
 - [ ] `docs/` — spec, architecture, api-contract, tasks, corpus-generation-prompt
-- [ ] `CLAUDE.md` + `AGENTS.md` — tool alignment, pointer to `docs/`
+- [x] `CLAUDE.md` + `AGENTS.md` — tool alignment, pointer to `docs/`
 - [ ] `backend/rag/config.py` — all knobs, env-overridable → [architecture.md#config](architecture.md#config)
 - [ ] `backend/pyproject.toml` deps pinned (`uv add fastapi uvicorn ollama numpy tiktoken`) + pytest config
 
