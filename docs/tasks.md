@@ -28,7 +28,7 @@ rails that already serve traffic.
 - [x] Stub `POST /api/chat`: streams a canned SSE sequence per the contract
       (token → citations → done) — frontend can integrate from day one
 - [x] CORS for the frontend origin
-- [ ] `scripts/dev.ps1`: start backend + frontend in two terminals (used every day, not just demo day)
+- [-] `scripts/dev.ps1`: deferred — one `uvicorn` command is enough until the frontend exists; revisit in Phase 8
 - [x] Test: health returns 200; stub emits contract-shaped events
 
 ## Phase 2 — Sample corpus
@@ -40,9 +40,9 @@ Real data before the pipeline, so chunk/retrieve/budget test against it.
 
 ## Phase 3 — LLM seam → [architecture.md#llm-seam](architecture.md#llm-seam)
 
-- [ ] `rag/llm.py`: `chat()` + `embed()` wrappers, round-trip verified
-- [ ] Guardrail: only this file imports the Ollama client
-- [ ] Wire `GET /api/health` to report Ollama reachability
+- [x] `rag/llm.py`: `chat()` + `embed()` wrappers, round-trip verified
+- [x] Guardrail: only this file imports the Ollama client
+- [x] Wire `GET /api/health` to report Ollama reachability
 
 ## Phase 4 — Ingestion → [architecture.md#ingestion](architecture.md#ingestion)
 

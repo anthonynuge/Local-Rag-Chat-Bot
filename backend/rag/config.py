@@ -13,6 +13,7 @@ def _int(name: str, default: int) -> int:
 MODEL = os.getenv("MODEL", "llama3.2:3b")  # chat model — 3B quantized, usable on CPU
 EMBED_MODEL = os.getenv("EMBED_MODEL", "nomic-embed-text")  # local embedding model
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+TEMPERATURE = float(os.getenv("TEMPERATURE", 0.0))  # 0 = deterministic — grounded answers, repeatable smoke test
 
 NUM_CTX = _int("NUM_CTX", 6144)  # hard ceiling: "6K" = 6 × 1024, passed to Ollama's num_ctx
 ANSWER_RESERVE = _int("ANSWER_RESERVE", 1024)  # held back for the reply (num_predict)
