@@ -35,8 +35,8 @@ rails that already serve traffic.
 
 Real data before the pipeline, so chunk/retrieve/budget test against it.
 
-- [ ] Generate the sample wiki → `backend/data/sample/` (mixed `.md`/`.txt`, varying length) → [corpus-generation-prompt.md](corpus-generation-prompt.md)
-- [ ] Exclude some topics on purpose → drives the refusal test
+- [x] Generate the sample wiki → `backend/data/sample/` (mixed `.md`/`.txt`, varying length) → [corpus-generation-prompt.md](corpus-generation-prompt.md)
+- [x] Exclude some topics on purpose → drives the refusal test
 
 ## Phase 3 — LLM seam → [architecture.md#llm-seam](architecture.md#llm-seam)
 

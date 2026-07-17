@@ -1,0 +1,23 @@
+Q: How do I expense a purchase?
+A: Submit receipts in HubNorth → Expenses within 30 days. Under $75 needs manager approval only; $75 and up also needs People Ops review. Use the Northwind virtual card in 1Password when possible.
+
+Q: What is the remote work policy?
+A: Flex roles may work remote up to three days per week. Mark days in HubNorth Presence. Core hours are 10:00–15:00 Boulder time for sync meetings.
+
+Q: Where do I park at HQ?
+A: Boulder HQ garage at 1400 Walnut Street. Badge is activated on day one. Guest parking is Level P1 spaces 12–20; register plates with the front desk.
+
+Q: Which Slack channels should I join?
+A: Defaults are #general, #it-help, #people-help. Engineers also join #deploys and #oncall. Ask your buddy before joining customer-named channels.
+
+Q: How do I get IT help?
+A: Post in #it-help or open a ForgeDesk ticket. Urgent lockouts: call Boulder front desk +1-303-555-0140.
+
+Q: Can I bring guests to the office?
+A: Yes with 24-hour notice to the front desk. Guests need a badge escort at all times and may not enter the Eindhoven lab without Mira Okonkwo approval.
+
+Q: Who resets my HubNorth password?
+A: Use the HubNorth "Forgot password" link, or ask #it-help if MFA is also lost. IT will not reset passwords over unverified Slack DM.
+
+Q: Is there a shuttle between Boulder and Austin?
+A: No company shuttle. Travel between offices is booked via HubNorth Travel; manager approval required for flights.
