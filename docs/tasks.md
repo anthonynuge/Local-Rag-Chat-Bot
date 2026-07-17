@@ -12,12 +12,12 @@ Status: `[ ]` todo · `[x]` done · `[-]` deferred / won't do (add reason + when
 
 ## Phase 0 — Foundation
 
-- [ ] Repo layout: `backend/` (uv project), `docs/`; `frontend/`, `scripts/` added when their phase lands
-- [ ] Root `.gitignore` (`.venv`, `__pycache__`, `backend/storage/`, node)
-- [ ] `docs/` — spec, architecture, api-contract, tasks, corpus-generation-prompt
+- [x] Repo layout: `backend/` (uv project), `docs/`; `frontend/`, `scripts/` added when their phase lands
+- [x] Root `.gitignore` (`.venv`, `__pycache__`, `backend/storage/`, node)
+- [x] `docs/` — spec, architecture, api-contract, tasks, corpus-generation-prompt
 - [x] `CLAUDE.md` + `AGENTS.md` — tool alignment, pointer to `docs/`
 - [ ] `backend/rag/config.py` — all knobs, env-overridable → [architecture.md#config](architecture.md#config)
-- [ ] `backend/pyproject.toml` deps pinned (`uv add fastapi uvicorn ollama numpy tiktoken`) + pytest config
+- [x] `backend/pyproject.toml` deps pinned (`uv add fastapi uvicorn ollama numpy tiktoken`) + pytest config
 
 ## Phase 1 — Walking skeleton _(first thing that runs)_
 
