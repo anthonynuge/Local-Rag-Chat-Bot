@@ -15,16 +15,14 @@ def chat(messages):
     """Stream chat chunks; the last one (done=True) carries
     prompt_eval_count / eval_count — the numbers the budget guardrail
     asserts against."""
-    return _client.chat(
-        model=config.MODEL,
-        messages=messages,
-        stream=True,
-        options={
-            "num_ctx": config.NUM_CTX,
-            "num_predict": config.ANSWER_RESERVE,
-            "temperature": config.TEMPERATURE,
-        },
-    )
+    options = {
+        "num_ctx": config.NUM_CTX,
+        "num_predict": config.ANSWER_RESERVE,
+        "temperature": config.TEMPERATURE,
+    }
+    if config.NUM_GPU is not None:
+        options["num_gpu"] = int(config.NUM_GPU)  # 0 = CPU-only calibration pass
+    return _client.chat(model=config.MODEL, messages=messages, stream=True, options=options)
 
 
 def available_models():

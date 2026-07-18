@@ -66,8 +66,8 @@ Swap the Phase 1 stub for the live pipeline; the SSE shape doesn't change.
 
 ## Phase 7 — Verify → [architecture.md#calibration](architecture.md#calibration)
 
-- [ ] `scripts/smoke.py`: ingest → chat → assert correct citation + under budget
-- [ ] Token calibration: estimate vs `prompt_eval_count` within margin; one CPU-only pass
+- [x] `scripts/smoke.py`: ingest → chat → assert correct citation + under budget
+- [x] Token calibration: estimate vs `prompt_eval_count` within margin (+3.1% vs 10%); CPU-only pass identical
 
 ## Frontend
 
