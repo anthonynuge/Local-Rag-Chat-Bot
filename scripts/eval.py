@@ -23,6 +23,7 @@ Needs Ollama running with both models pulled. Sequential on purpose — a
 single local GPU serializes requests anyway.
 """
 import json
+import os
 import subprocess
 import sys
 import time
@@ -48,6 +49,31 @@ CONFIG_KEYS = [
     "SAFETY_FRAC", "INPUT_BUDGET", "CONTEXT_BUDGET", "TOP_K",
     "CHUNK_TOKENS", "CHUNK_OVERLAP", "SYSTEM_PROMPT", "CITE_REMINDER",
 ]
+
+# ANSI colors. Windows Terminal understands them natively; the empty
+# os.system("") call flips classic conhost into VT mode too. Piped or
+# redirected output (not a tty) stays plain so saved logs are clean.
+GREEN, RED, YELLOW, BOLD, DIM = "32", "31", "33", "1", "2"
+COLOR_ENABLED = sys.stdout.isatty()
+if COLOR_ENABLED and os.name == "nt":
+    os.system("")
+
+
+def paint(text, color):
+    if not COLOR_ENABLED:
+        return text
+    return f"\033[{color}m{text}\033[0m"
+
+
+def paint_rate(passed, total):
+    """passed/total colored: full green, partial yellow, zero red."""
+    if passed == total:
+        color = GREEN
+    elif passed == 0:
+        color = RED
+    else:
+        color = YELLOW
+    return paint(f"{passed}/{total}", color)
 
 
 def ask(client, message, history):
@@ -147,19 +173,24 @@ def sample_resources():
 
 
 def print_query_metrics(question, embed_seconds, search_seconds, stats):
-    rows = [
-        ("question length", f"{n_tokens(question)} tokens"),
-        ("embedding time", f"{embed_seconds * 1000:.0f} ms"),
-        ("vector search", f"{search_seconds * 1000:.1f} ms"),
+    rows = [("question length", f"{n_tokens(question)} tokens")]
+    # refusal questions pass 0.0/0.0 — no retrieval was timed for them
+    if embed_seconds or search_seconds:
+        rows.append(("embedding time", f"{embed_seconds * 1000:.0f} ms"))
+        # cosine over a few dozen chunks is one numpy matmul: microseconds.
+        # "us" not the µ glyph — Windows console codepages mangle it
+        rows.append(("vector search", f"{search_seconds * 1_000_000:.0f} us"))
+    rows.extend([
         ("context tokens", f"{stats['context_tokens']:,}"),
         ("prompt tokens", f"{stats['prompt_tokens']:,}"),
         ("TTFT", f"{stats['ttft_s'] * 1000:.0f} ms"),
         ("generation speed", f"{stats['tok_s']:.1f} tok/s"),
         ("total response", f"{stats['total_s']:.2f} s"),
-    ]
+    ])
     rows.extend(sample_resources())
     for label, value in rows:
-        print(f"           {label + ':':<18}{value:>12}")
+        print(paint(f"           {label + ':':<18}{value:>12}", DIM))
+    print()
 
 
 def make_record(phase, question, stats, **extra):
@@ -194,12 +225,12 @@ def run():
         except ImportError:
             pass
 
-    print(f"[1/5] ingest: rebuilding index from {data_dir} ...")
+    print(paint(f"[1/5] ingest: rebuilding index from {data_dir} ...", BOLD))
     ingest.main(data_dir)
 
     client = TestClient(app_main.app)
 
-    print("[2/5] health ...")
+    print(paint("[2/5] health ...", BOLD))
     health = client.get("/api/health")
     assert health.status_code == 200, f"unhealthy: {health.json()}"
 
@@ -211,7 +242,7 @@ def run():
     speeds = []
     records = []
 
-    print(f"[3/5] in-corpus: {len(corpus_questions)} questions ...")
+    print(paint(f"\n[3/5] in-corpus: {len(corpus_questions)} questions ...", BOLD))
     cited_correctly = 0
     for entry in corpus_questions:
         question = entry["question"]
@@ -226,12 +257,12 @@ def run():
         cited = expected in cited_sources
         if cited:
             cited_correctly += 1
-            status = "ok  "
-        else:
-            status = "MISS"
+        # pad BEFORE painting — the invisible color codes would break
+        # f-string column alignment otherwise
+        status = paint("ok  ", GREEN) if cited else paint("MISS", RED)
         detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
-        ret_flag = "ok" if retrieved else "MISS"
-        print(f"      {status} cite {expected:<20} ret={ret_flag:<4} "
+        ret_flag = paint("ok  ", GREEN) if retrieved else paint("MISS", RED)
+        print(f"      {status} cite {expected:<20} ret={ret_flag} "
               f"ttft={stats['ttft_s']:.2f}s {stats['tok_s']:5.1f} tok/s  {question!r}{detail}")
         if metrics_enabled:
             print_query_metrics(question, embed_seconds, search_seconds, stats)
@@ -243,7 +274,7 @@ def run():
             search_ms=round(search_seconds * 1000, 2),
         ))
 
-    print(f"[4/5] must-refuse: {len(refusal_questions)} questions ...")
+    print(paint(f"\n[4/5] must-refuse: {len(refusal_questions)} questions ...", BOLD))
     refused = 0
     for entry in refusal_questions:
         question = entry["question"]
@@ -252,9 +283,7 @@ def run():
         speeds.append(stats["tok_s"])
         if cited_sources == set():
             refused += 1
-            status = "ok  "
-        else:
-            status = "MISS"
+        status = paint("ok  ", GREEN) if cited_sources == set() else paint("MISS", RED)
         print(f"      {status} refuse ({sorted(cited_sources)} cited)  {question!r}")
         if metrics_enabled:
             print_query_metrics(question, 0.0, 0.0, stats)
@@ -263,7 +292,7 @@ def run():
             refused=cited_sources == set(), cited_sources=sorted(cited_sources),
         ))
 
-    print(f"[5/5] multi-turn: {len(sequences)} sequences ...")
+    print(paint(f"\n[5/5] multi-turn: {len(sequences)} sequences ...", BOLD))
     passed_sequences = 0
     for sequence in sequences:
         history = []
@@ -280,14 +309,12 @@ def run():
             ttfts.append(stats["ttft_s"])
             speeds.append(stats["tok_s"])
             cited = expected in cited_sources
-            if cited:
-                status = "ok  "
-            else:
-                status = "MISS"
+            if not cited:
                 every_turn_cited = False
+            status = paint("ok  ", GREEN) if cited else paint("MISS", RED)
             detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
-            ret_flag = "ok" if retrieved else "MISS"
-            print(f"      {status} cite {expected:<20} ret={ret_flag:<4} "
+            ret_flag = paint("ok  ", GREEN) if retrieved else paint("MISS", RED)
+            print(f"      {status} cite {expected:<20} ret={ret_flag} "
                   f"history={len(history)//2} turns  {question!r}{detail}")
             if metrics_enabled:
                 print_query_metrics(question, embed_seconds, search_seconds, stats)
@@ -321,14 +348,14 @@ def run():
     )
     total_requests = len(ttfts)
 
-    print(f"\n=== EVAL REPORT ({data_dir.name}, {total_requests} requests) ===")
-    print(f"retrieval hit-rate: {retrieval_hits}/{retrieval_checks} "
+    print(paint(f"\n=== EVAL REPORT ({data_dir.name}, {total_requests} requests) ===", BOLD))
+    print(f"retrieval hit-rate: {paint_rate(retrieval_hits, retrieval_checks)} "
           f"({100 * retrieval_hits / retrieval_checks:.0f}%)")
-    print(f"citation-rate:      {cited_correctly}/{len(corpus_questions)} "
+    print(f"citation-rate:      {paint_rate(cited_correctly, len(corpus_questions))} "
           f"({100 * cited_correctly / len(corpus_questions):.0f}%)")
-    print(f"refusal-rate:       {refused}/{len(refusal_questions)} "
+    print(f"refusal-rate:       {paint_rate(refused, len(refusal_questions))} "
           f"({100 * refused / len(refusal_questions):.0f}%)")
-    print(f"multi-turn:         {passed_sequences}/{len(sequences)} sequences")
+    print(f"multi-turn:         {paint_rate(passed_sequences, len(sequences))} sequences")
     print(f"TTFT avg:           {sum(ttfts) / total_requests:.2f}s   "
           f"tok/s avg: {sum(speeds) / total_requests:.1f}")
 
@@ -341,8 +368,11 @@ def run():
         differences = []
         for name, [passed, total] in rates.items():
             if baseline.get(name) != [passed, total]:
-                base_passed, base_total = baseline.get(name, ["?", "?"])
-                differences.append(f"{name} {base_passed}/{base_total} -> {passed}/{total}")
+                base_passed, base_total = baseline.get(name, [0, 0])
+                color = GREEN if passed > base_passed else RED
+                differences.append(paint(
+                    f"{name} {base_passed}/{base_total} -> {passed}/{total}", color
+                ))
         if differences:
             print("vs baseline:        " + ",  ".join(differences))
         else:
@@ -367,9 +397,9 @@ def run():
     print(f"run saved:          {result_path}")
 
     if failing == 0:
-        print("EVAL GREEN")
+        print(paint("EVAL GREEN", GREEN))
     else:
-        print(f"EVAL RED ({failing} failing checks)")
+        print(paint(f"EVAL RED ({failing} failing checks)", RED))
     sys.exit(0 if failing == 0 else 1)
 
 
