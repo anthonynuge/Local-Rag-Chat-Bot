@@ -4,9 +4,12 @@ __pycache__/
 # generated index (index.npz + chunks.jsonl)
 backend/storage/
 
-# Node (frontend, once scaffolded)
+# Node (frontend)
 node_modules/
 dist/
+*.log
+# local env overrides (.env.local etc.) — never committed
+*.local
 
 # OS / editor
 .DS_Store
