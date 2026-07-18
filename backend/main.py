@@ -138,6 +138,9 @@ def _stream(messages, citations, report):
         yield _sse("done", {
             "prompt_eval_count": prompt_tokens,
             "eval_count": final["eval_count"],
+            # generation time in ns (api-contract.md); .get keeps faked
+            # streams in tests working without the field
+            "eval_duration": final.get("eval_duration", 0),
             "budget": report,
         })
     except Exception as e:
