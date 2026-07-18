@@ -52,7 +52,7 @@ Real data before the pipeline, so chunk/retrieve/budget test against it.
 
 ## Phase 5 — Retrieval + budget **[CORE]** → [architecture.md#budget](architecture.md#budget)
 
-- [ ] `rag/store.py`: cosine `top_k`
+- [x] `rag/store.py`: cosine `top_k`
 - [ ] `rag/budget.py`: `pack()` greedy packer + budget report
 - [ ] Tests: never exceed `input_budget`, keep system+question, drop oldest history, chunk/`top_k` correctness
 

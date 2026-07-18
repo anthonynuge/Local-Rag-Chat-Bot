@@ -13,15 +13,29 @@ from rag import config
 
 
 class Store:
-    """The loaded index: vector matrix + chunk metadata, row-aligned.
-
-    Retrieval (cosine top_k) lands here in Phase 5.
-    """
+    """The loaded index: vector matrix + chunk metadata, row-aligned."""
 
     def __init__(self, vectors, chunks):
         assert len(vectors) == len(chunks), "matrix and metadata out of alignment"
         self.vectors = vectors  # (n, dim) float32, L2-normalized
         self.chunks = chunks    # list[dict], row-aligned
+
+    def top_k(self, query_vec, k=None):
+        """Best-matching chunks for a query vector, best first.
+
+        query_vec is normalized (llm.embed) -> dot product IS cosine similarity.
+        """
+        if k is None:
+            k = config.TOP_K
+        sims = self.vectors @ query_vec      # one cosine score per chunk row
+        best_first = np.argsort(sims)[::-1]  # argsort is ascending; reverse it
+
+        results = []
+        for row in best_first[:k]:
+            hit = dict(self.chunks[row])  # copy so the stored chunk stays unmodified
+            hit["score"] = float(sims[row])
+            results.append(hit)
+        return results
 
 
 def save(vectors, chunks, storage_dir=None):
