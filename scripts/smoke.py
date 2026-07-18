@@ -50,7 +50,8 @@ def run():
     print("      index:", health.json()["index"])
 
     print("[3/4] in-corpus question -> must answer and cite pto-policy.md ...")
-    r = client.post("/api/chat", json={"message": "How much PTO do full-time employees accrue per month?"})
+    question = "How much PTO do full-time employees accrue per month?"
+    r = client.post("/api/chat", json={"message": question})
     events = parse_sse(r.text)
 
     tokens = [data["delta"] for event, data in events if event == "token"]
