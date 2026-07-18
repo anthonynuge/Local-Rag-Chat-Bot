@@ -3,6 +3,9 @@
 __pycache__/
 # generated index (index.npz + chunks.jsonl)
 backend/storage/
+# eval run records (regenerable, machine-specific); the accepted rates live
+# in each dataset's committed baseline.json
+evals/results/
 
 # Node (frontend)
 node_modules/
