@@ -6,6 +6,7 @@ SSE (token → citations → done, or error), per api-contract.md.
 """
 
 import json
+import logging
 import re
 
 from fastapi import FastAPI, HTTPException
@@ -14,6 +15,9 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from rag import budget, config, llm, store
+
+logging.basicConfig(level=config.LOG_LEVEL, format="%(levelname)s %(name)s | %(message)s")
+logger = logging.getLogger("rag.api")
 
 app = FastAPI(title="Local RAG Chat")
 
@@ -120,11 +124,16 @@ def _stream(messages, citations, report):
         cited = [citation for citation in citations if citation["id"] in cited_ids]
         yield _sse("citations", {"citations": cited})
 
+        logger.info("answer: %d chars, cited %s", len(answer), sorted(cited_ids) or "nothing")
+
         # 6K guardrail (architecture.md#budget), checked empirically: Ollama's own
         # prompt token count plus the answer reserve must fit the context window.
         prompt_tokens = final["prompt_eval_count"]
         if prompt_tokens + config.ANSWER_RESERVE > config.NUM_CTX:
             raise RuntimeError(f"budget breach: prompt_eval_count={prompt_tokens}")
+
+        estimate = report["system"] + report["context"] + report["history"] + report["question"]
+        logger.info("budget: prompt_eval_count=%d, estimate=%d", prompt_tokens, estimate)
 
         yield _sse("done", {
             "prompt_eval_count": prompt_tokens,
@@ -132,6 +141,7 @@ def _stream(messages, citations, report):
             "budget": report,
         })
     except Exception as e:
+        logger.exception("chat stream failed")  # full traceback server-side; client gets the message
         yield _sse("error", {"message": str(e)})
 
 
@@ -151,4 +161,15 @@ def chat(req: ChatRequest) -> StreamingResponse:
     query_vec = llm.embed([question])[0]  # embed() is batch-shaped; one question -> row 0
     ranked = get_index().top_k(query_vec)
     messages, citations, report = budget.pack(config.SYSTEM_PROMPT, question, ranked, req.history)
+
+    # Retrieval trace: what came back, how confident, and whether pack() kept it.
+    # pack() keeps a strict rank-order prefix, so the first len(citations) are in.
+    logger.info("chat: %r (history=%d turns)", question[:80], len(req.history))
+    for rank, chunk in enumerate(ranked, start=1):
+        kept = "packed" if rank <= len(citations) else "dropped by budget"
+        logger.info(
+            "  #%d score=%.3f %s — %r (%s)",
+            rank, chunk["score"], chunk["source"], chunk["heading"], kept,
+        )
+
     return StreamingResponse(_stream(messages, citations, report), media_type="text/event-stream")

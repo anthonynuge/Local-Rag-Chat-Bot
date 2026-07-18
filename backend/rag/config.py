@@ -15,6 +15,7 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "nomic-embed-text")  # local embedding mo
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0.0))  # 0 = deterministic — grounded answers, repeatable smoke test
 NUM_GPU = os.getenv("NUM_GPU")  # unset = Ollama auto-detects; "0" = force CPU (calibration pass)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")  # "WARNING" silences the per-request trace
 
 SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
