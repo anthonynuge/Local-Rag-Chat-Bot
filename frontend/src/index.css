@@ -1,1 +1,61 @@
 @import "tailwindcss";
+
+/* Design tokens — docs/design.md is the source of truth. */
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #1f1f1f;
+  --color-card: #ffffff;
+  --color-card-foreground: #1f1f1f;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1f1f1f;
+  --color-primary: #0b57d0;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #e9eef6;
+  --color-secondary-foreground: #1f1f1f;
+  --color-muted: #f0f4f9;
+  --color-muted-foreground: #575b5f;
+  --color-accent: #c2e7ff;
+  --color-accent-foreground: #001d35;
+  --color-destructive: #dc2626;
+  --color-success: #146c2e;
+  --color-border: #e1e6ed;
+  --color-input: #f0f4f9;
+  --color-ring: #0b57d0;
+
+  --animate-message-in: message-in 300ms ease-out both;
+  --animate-caret: caret-blink 1s steps(1) infinite;
+  --animate-thinking: thinking-bounce 1.2s ease-in-out infinite;
+}
+
+/* New message slides up and fades in. */
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Streaming caret blink. */
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Waiting-for-first-token dots. */
+@keyframes thinking-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
