@@ -82,13 +82,15 @@ Can start any time after Phase 1 — the stub endpoint serves the contract.
 
 ### Phase 9 — Chat shell → [api-contract.md](api-contract.md)
 
-- [ ] `Composer`, `MessageList`, `MessageBubble`
-- [ ] `src/api.ts`: SSE client per the contract, developed against the stub
+- [x] `Composer`, `MessageList`, `MessageBubble`
+- [x] `src/api.ts`: SSE client per the contract (developed against the live
+      endpoint — backend landed before the frontend started)
 
 ### Phase 10 — Streaming + states
 
-- [ ] Live token append + typing indicator until `done`
-- [ ] `CitationList`, loading/disabled/error states, `HealthDot` from `/api/health`
+- [x] Live token append + typing indicator until `done` (+ steady typewriter
+      reveal — client-side pacing, the stream itself is never throttled)
+- [x] `CitationList`, loading/disabled/error states, `HealthDot` from `/api/health`
 
 ## Phase 11 — Release
 
