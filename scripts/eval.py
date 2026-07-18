@@ -117,7 +117,7 @@ def run():
             status = "ok  "
         else:
             status = "MISS"
-        detail = "" if cited else f"  (cited {sorted(cited_sources)})"
+        detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
         ret_flag = "ok" if retrieved else "MISS"
         print(f"      {status} cite {expected:<20} ret={ret_flag:<4} "
               f"ttft={ttft:.2f}s {tok_s:5.1f} tok/s  {question!r}{detail}")
@@ -158,7 +158,7 @@ def run():
             else:
                 status = "MISS"
                 every_turn_cited = False
-            detail = "" if cited else f"  (cited {sorted(cited_sources)})"
+            detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
             ret_flag = "ok" if retrieved else "MISS"
             print(f"      {status} cite {expected:<20} ret={ret_flag:<4} "
                   f"history={len(history)//2} turns  {question!r}{detail}")
