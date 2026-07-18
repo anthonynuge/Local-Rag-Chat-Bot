@@ -15,6 +15,13 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "nomic-embed-text")  # local embedding mo
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0.0))  # 0 = deterministic — grounded answers, repeatable smoke test
 
+SYSTEM_PROMPT = os.getenv(
+    "SYSTEM_PROMPT",
+    "Answer ONLY using the numbered context below. Cite sources inline as [1], [2]. "
+    "If the answer is not in the context, say you don't have that information — "
+    "do not use outside knowledge.",
+)
+
 NUM_CTX = _int("NUM_CTX", 6144)  # hard ceiling: "6K" = 6 × 1024, passed to Ollama's num_ctx
 ANSWER_RESERVE = _int("ANSWER_RESERVE", 1024)  # held back for the reply (num_predict)
 SAFETY_FRAC = float(os.getenv("SAFETY_FRAC", 0.10))  # input held back for tokenizer drift + template

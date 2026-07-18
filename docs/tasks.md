@@ -60,9 +60,9 @@ Real data before the pipeline, so chunk/retrieve/budget test against it.
 
 Swap the Phase 1 stub for the live pipeline; the SSE shape doesn't change.
 
-- [ ] `POST /api/chat`: retrieve → pack → `llm.chat()` → stream token/citations/done
-- [ ] `event: error` on failure; 400 on empty/oversized question
-- [ ] Tests: event shape/order + 400 path (Ollama stubbed via the seam)
+- [x] `POST /api/chat`: retrieve → pack → `llm.chat()` → stream token/citations/done
+- [x] `event: error` on failure; 400 on empty/oversized question
+- [x] Tests: event shape/order + 400 path (Ollama stubbed via the seam)
 
 ## Phase 7 — Verify → [architecture.md#calibration](architecture.md#calibration)
 

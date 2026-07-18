@@ -1,19 +1,19 @@
-"""FastAPI entry — walking skeleton. Routes are the HTTP seam; RAG logic lives in rag/.
+"""FastAPI entry — routes are the HTTP seam; RAG logic lives in rag/.
 
-/api/health probes Ollama through the llm seam (503 + reason when it can't serve).
-/api/chat streams a canned SSE sequence shaped like the real contract so the
-frontend can integrate before the pipeline exists; its insides get swapped for
-the live pipeline in Phase 6 — the SSE shape doesn't change.
+/api/health probes Ollama and the index (503 + reason when it can't serve).
+/api/chat runs the live pipeline: retrieve → pack → llm.chat(), streamed as
+SSE (token → citations → done, or error), per api-contract.md.
 """
 
 import json
+import re
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from rag import config, llm
+from rag import budget, config, llm, store
 
 app = FastAPI(title="Local RAG Chat")
 
@@ -23,6 +23,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_index = None
+
+
+def get_index():
+    """Load the saved index once, on first use; raises if ingest never ran."""
+    global _index
+    if _index is None:
+        _index = store.load()
+    return _index
 
 
 def _sse(event: str, data: dict) -> str:
@@ -53,7 +63,7 @@ def health():
         "status": "ok",
         "ollama": {"reachable": False, "host": config.OLLAMA_HOST},
         "models": {"chat": config.MODEL, "embed": config.EMBED_MODEL, "present": False},
-        "index": {"loaded": False},  # wired in Phase 4
+        "index": {"loaded": False, "chunks": 0, "sources": 0},
         "budget": {
             "num_ctx": config.NUM_CTX,
             "answer_reserve": config.ANSWER_RESERVE,
@@ -74,6 +84,13 @@ def health():
     except Exception as e:
         reason = f"ollama unreachable: {e}"
 
+    try:
+        index = get_index()
+        sources = {chunk["source"] for chunk in index.chunks}
+        body["index"] = {"loaded": True, "chunks": len(index.chunks), "sources": len(sources)}
+    except Exception as e:
+        reason = reason or f"index not loaded: {e}"
+
     if reason:
         body["status"] = "unhealthy"
         body["reason"] = reason
@@ -81,19 +98,57 @@ def health():
     return body
 
 
-def _stub_stream():
-    """Canned token → citations → done sequence, per api-contract.md."""
-    for delta in ["Full-time ", "employees ", "accrue ", "1.5 days ", "per month."]:
-        yield _sse("token", {"delta": delta})
-    yield _sse("citations", {"citations": [{"id": 1, "source": "pto-policy.md", "heading": "Accrual"}]})
-    yield _sse("done", {
-        "prompt_eval_count": 0,
-        "eval_count": 0,
-        "budget": {"system": 0, "context": 0, "history": 0, "question": 0},
-    })
+def _stream(messages, citations, report):
+    """Yield SSE frames from the live model: token* → citations → done.
+
+    Any failure mid-stream yields an error event instead of done and ends
+    the stream (api-contract.md)."""
+    try:
+        deltas = []
+        final = None
+        for chunk in llm.chat(messages):
+            delta = chunk["message"]["content"]
+            if delta:
+                deltas.append(delta)
+                yield _sse("token", {"delta": delta})
+            final = chunk
+
+        # Only sources the answer actually cites — a refusal cites nothing (spec A3).
+        answer = "".join(deltas)
+        # r"\[(\d+)\]" finds every [1], [2], ... marker and captures the number.
+        cited_ids = {int(number) for number in re.findall(r"\[(\d+)\]", answer)}
+        cited = [citation for citation in citations if citation["id"] in cited_ids]
+        yield _sse("citations", {"citations": cited})
+
+        # 6K guardrail (architecture.md#budget), checked empirically: Ollama's own
+        # prompt token count plus the answer reserve must fit the context window.
+        prompt_tokens = final["prompt_eval_count"]
+        if prompt_tokens + config.ANSWER_RESERVE > config.NUM_CTX:
+            raise RuntimeError(f"budget breach: prompt_eval_count={prompt_tokens}")
+
+        yield _sse("done", {
+            "prompt_eval_count": prompt_tokens,
+            "eval_count": final["eval_count"],
+            "budget": report,
+        })
+    except Exception as e:
+        yield _sse("error", {"message": str(e)})
 
 
 @app.post("/api/chat")
 def chat(req: ChatRequest) -> StreamingResponse:
-    # canned stream; retrieve → pack → llm.chat() replaces this in Phase 6.
-    return StreamingResponse(_stub_stream(), media_type="text/event-stream")
+    question = req.message.strip()
+    if not question:
+        raise HTTPException(400, "empty message")
+
+    try:
+        # Pre-flight with no context/history: rejects an oversized question
+        # with a 400 before the query ever reaches the embedder.
+        budget.pack(config.SYSTEM_PROMPT, question, [], [])
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+    query_vec = llm.embed([question])[0]  # embed() is batch-shaped; one question -> row 0
+    ranked = get_index().top_k(query_vec)
+    messages, citations, report = budget.pack(config.SYSTEM_PROMPT, question, ranked, req.history)
+    return StreamingResponse(_stream(messages, citations, report), media_type="text/event-stream")
