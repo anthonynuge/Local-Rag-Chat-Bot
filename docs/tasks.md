@@ -75,7 +75,7 @@ Can start any time after Phase 1 — the stub endpoint serves the contract.
 
 ### Phase 8 — Setup
 
-- [ ] `docs/design.md` (color tokens, typography, component inventory)
+- [x] `docs/design.md` (color tokens, typography, component inventory)
 - [ ] Vite + React + TS, Tailwind + shadcn/ui, tokens into `src/index.css`
 
 ### Phase 9 — Chat shell → [api-contract.md](api-contract.md)
