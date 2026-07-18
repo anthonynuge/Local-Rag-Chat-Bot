@@ -27,6 +27,8 @@ uv run python -m rag.ingest ./data/sample   # build index
 uv run uvicorn main:app --reload            # backend :8000
 uv run pytest tests                         # deterministic tests (no Ollama)
 uv run python ../scripts/smoke.py           # live end-to-end check
+uv run python ../scripts/eval.py [data_dir] # quality rates vs baseline.json
+uv run python ../scripts/chat.py [data_dir] # interactive debug REPL (shows chunks/prompt)
 ```
 
 Trunk-based: short branches off `main`, local squash-merge; `pytest tests` green before every merge.
