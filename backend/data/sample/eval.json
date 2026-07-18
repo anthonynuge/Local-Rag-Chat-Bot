@@ -1,0 +1,49 @@
+{
+  "corpus": [
+    {"question": "How much PTO do full-time employees accrue per month?", "expected_source": "pto-policy.md"},
+    {"question": "What is the cap on PTO carryover at year end?", "expected_source": "pto-policy.md"},
+    {"question": "What are the core hours for sync meetings?", "expected_source": "faq.txt"},
+    {"question": "Where is guest parking at the Boulder HQ?", "expected_source": "faq.txt"},
+    {"question": "What is the minimum password length for Northwind accounts?", "expected_source": "security-policy.txt"},
+    {"question": "How quickly must a lost or stolen laptop be reported?", "expected_source": "security-policy.txt"},
+    {"question": "How do I roll back a bad prod deploy?", "expected_source": "deploy-runbook.md"},
+    {"question": "How long does the prod canary run before full rollout?", "expected_source": "deploy-runbook.md"},
+    {"question": "What accounts should I request on my first day?", "expected_source": "onboarding.md"},
+    {"question": "Which training courses must new hires complete in week one?", "expected_source": "onboarding.md"},
+    {"question": "Who founded Northwind Robotics and when?", "expected_source": "company-overview.md"},
+    {"question": "How much weight can the Warehouse Pilot robot carry?", "expected_source": "company-overview.md"}
+  ],
+  "refusal": [
+    {"question": "Who won the 2018 FIFA World Cup?"},
+    {"question": "What is the capital of France?"},
+    {"question": "What is the salary for a Platform engineer at Northwind?"},
+    {"question": "What was Northwind's revenue last year?"},
+    {"question": "Who are Northwind's main competitors?"}
+  ],
+  "multi_turn": [
+    {
+      "name": "pto-thread",
+      "turns": [
+        {"question": "How much PTO do full-time employees accrue per month?", "expected_source": "pto-policy.md"},
+        {"question": "What happens to unused PTO at the end of the year?", "expected_source": "pto-policy.md"},
+        {"question": "How far in advance must I request four or more days off?", "expected_source": "pto-policy.md"}
+      ]
+    },
+    {
+      "name": "deploy-thread",
+      "turns": [
+        {"question": "How do I deploy fleet-os to staging?", "expected_source": "deploy-runbook.md"},
+        {"question": "How do I roll it back if the error rate spikes?", "expected_source": "deploy-runbook.md"},
+        {"question": "Who must approve a deploy freeze lasting more than four hours?", "expected_source": "deploy-runbook.md"}
+      ]
+    },
+    {
+      "name": "onboarding-security-thread",
+      "turns": [
+        {"question": "What accounts should I request on my first day?", "expected_source": "onboarding.md"},
+        {"question": "What is the minimum password length for those accounts?", "expected_source": "security-policy.txt"},
+        {"question": "Is SMS allowed as a second factor?", "expected_source": "security-policy.txt"}
+      ]
+    }
+  ]
+}
