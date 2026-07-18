@@ -53,8 +53,8 @@ Real data before the pipeline, so chunk/retrieve/budget test against it.
 ## Phase 5 — Retrieval + budget **[CORE]** → [architecture.md#budget](architecture.md#budget)
 
 - [x] `rag/store.py`: cosine `top_k`
-- [ ] `rag/budget.py`: `pack()` greedy packer + budget report
-- [ ] Tests: never exceed `input_budget`, keep system+question, drop oldest history, chunk/`top_k` correctness
+- [x] `rag/budget.py`: `pack()` greedy packer + budget report
+- [x] Tests: never exceed `input_budget`, keep system+question, drop oldest history, chunk/`top_k` correctness
 
 ## Phase 6 — Real chat endpoint → [api-contract.md](api-contract.md)
 
