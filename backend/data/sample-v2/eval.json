@@ -1,0 +1,49 @@
+{
+  "corpus": [
+    {"question": "How large is Thornmere National Park?", "expected_source": "park-overview.md"},
+    {"question": "How many sites does Larkspur Campground have?", "expected_source": "park-overview.md"},
+    {"question": "How long is the Sable Ridge Trail and how much elevation does it gain?", "expected_source": "trail-guide.md"},
+    {"question": "When is the Thornmere Summit Route typically snow-free?", "expected_source": "trail-guide.md"},
+    {"question": "How much is a vehicle day pass?", "expected_source": "permits-and-fees.md"},
+    {"question": "What is the maximum group size on a backcountry permit?", "expected_source": "permits-and-fees.md"},
+    {"question": "How long after an overdue report does a hasty search launch?", "expected_source": "ranger-operations.md"},
+    {"question": "Who can request a helicopter during a search and rescue?", "expected_source": "ranger-operations.md"},
+    {"question": "How far from my tent must food be stored in the backcountry?", "expected_source": "wildlife-safety.txt"},
+    {"question": "What is the fine for feeding wildlife?", "expected_source": "wildlife-safety.txt"},
+    {"question": "How often does the Ridge Runner shuttle run?", "expected_source": "visitor-faq.txt"},
+    {"question": "What is the daily limit for trout at Mirrorbend Lake?", "expected_source": "visitor-faq.txt"}
+  ],
+  "refusal": [
+    {"question": "How much does a park ranger at Thornmere earn?"},
+    {"question": "What is Thornmere National Park's annual budget?"},
+    {"question": "How many people have died in the park?"},
+    {"question": "Is Thornmere better than Yellowstone?"},
+    {"question": "Who won the 2018 FIFA World Cup?"}
+  ],
+  "multi_turn": [
+    {
+      "name": "backcountry-thread",
+      "turns": [
+        {"question": "What does a backcountry permit cost?", "expected_source": "permits-and-fees.md"},
+        {"question": "What is the maximum group size on one permit?", "expected_source": "permits-and-fees.md"},
+        {"question": "How much does renting a bear canister cost?", "expected_source": "permits-and-fees.md"}
+      ]
+    },
+    {
+      "name": "sar-thread",
+      "turns": [
+        {"question": "How long until an overdue party triggers a hasty search?", "expected_source": "ranger-operations.md"},
+        {"question": "Who is the incident commander by default?", "expected_source": "ranger-operations.md"},
+        {"question": "What weather conditions ground the helicopter?", "expected_source": "ranger-operations.md"}
+      ]
+    },
+    {
+      "name": "trip-planning-thread",
+      "turns": [
+        {"question": "How much is a vehicle day pass?", "expected_source": "permits-and-fees.md"},
+        {"question": "How often does the shuttle run?", "expected_source": "visitor-faq.txt"},
+        {"question": "How long is the Gorge Rim Loop?", "expected_source": "trail-guide.md"}
+      ]
+    }
+  ]
+}
