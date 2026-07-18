@@ -18,8 +18,12 @@ def pack(system, question, ranked, history):
     question alone exceed the budget — main.py maps that to a 400
     (api-contract.md): reject, never truncate.
     """
+    # The cite reminder is appended to the question only when context gets
+    # packed, but its room is reserved up front — reserving after packing
+    # would let a borderline prompt overflow the budget.
+    reminder = "\n\n" + config.CITE_REMINDER
     system_tokens = n_tokens(system)
-    question_tokens = n_tokens(question)
+    question_tokens = n_tokens(question) + n_tokens(reminder)
     if system_tokens + question_tokens > config.INPUT_BUDGET:
         raise ValueError(
             f"question too large: system+question is {system_tokens + question_tokens} tokens, "
@@ -59,13 +63,18 @@ def pack(system, question, ranked, history):
         history_tokens += pair_tokens
 
     # --- Assemble: context rides inside the system message; history in between.
+    # The cite reminder rides with the question — the system prompt is too far
+    # from the generation point for a small model to keep the [n] format once
+    # history grows (an uncited answer in history teaches it the wrong style).
     system_content = system
+    user_content = question
     if blocks:
         system_content = system + "\n\nContext:\n" + "".join(blocks)
+        user_content = question + reminder
     messages = (
         [{"role": "system", "content": system_content}]
         + kept
-        + [{"role": "user", "content": question}]
+        + [{"role": "user", "content": user_content}]
     )
 
     report = {

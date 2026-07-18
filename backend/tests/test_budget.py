@@ -38,7 +38,8 @@ def test_never_exceeds_input_budget_under_pressure():
     assert report["context"] <= config.CONTEXT_BUDGET
     # system prompt and question survived packing
     assert messages[0]["role"] == "system" and SYSTEM in messages[0]["content"]
-    assert messages[-1] == {"role": "user", "content": "what is the policy?"}
+    assert messages[-1]["role"] == "user"
+    assert messages[-1]["content"].startswith("what is the policy?")
 
 
 def test_context_packs_in_rank_order():
@@ -64,6 +65,17 @@ def test_oldest_history_dropped_first():
     assert kept_history == history[-len(kept_history):]
     # dropped whole pairs: kept history starts with a user turn
     assert kept_history[0]["role"] == "user"
+
+
+def test_cite_reminder_rides_with_question_only_when_context_packed():
+    # with packed context: reminder appended after the question
+    messages, _, _ = budget.pack(SYSTEM, "q?", [_chunk("some text " * 30)], [])
+    assert messages[-1]["content"].startswith("q?")
+    assert config.CITE_REMINDER in messages[-1]["content"]
+
+    # no context to cite -> plain question, no reminder to hallucinate against
+    messages, _, _ = budget.pack(SYSTEM, "q?", [], [])
+    assert messages[-1] == {"role": "user", "content": "q?"}
 
 
 def test_citations_only_for_packed_chunks():
