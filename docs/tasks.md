@@ -106,11 +106,10 @@ Fixes:
       measured not guessed. Ragas evaluated and skipped — its claim-check
       idea is in the judge prompt; the framework (LangChain wrappers +
       `datasets` dep, churny API) isn't worth it at 35 questions
-- [ ] Model swap `MODEL=qwen2.5:7b` — measured 2026-07-18 (see
+- [x] Model swap `MODEL=qwen2.5:7b` — measured 2026-07-18 (see
       `evals/EXPERIMENTS.md`): answer-correct 72%→81%, incorrect 9→1,
-      citations 69%→77%. Adoption pending: change config default + spec G3's
-      "3B answers the CPU question" line together, plus the refusal-prompt
-      fix (qwen cites while refusing)
+      citations 69%→77%. Adopted 2026-07-19: config default + spec G3
+      updated; 3B stays as the CPU-first fallback
 - [x] `.txt` chunking splits on blank-line paragraphs (`chunk.py`) — keeps
       FAQ Q/A pairs whole without format sniffing. Citations 77%→91% on 7B,
       trout retrieval miss fixed (see `evals/EXPERIMENTS.md`). TOP_K=4
@@ -122,7 +121,12 @@ Fixes:
       follow-up queued behind eval-set growth. See `evals/EXPERIMENTS.md`
 
 Known issues:
-- [ ] Garbled grounding: cited correctly but the answer is self-contradictory. E.g. _"off-leash only on the Mirrorbend Lakeshore Path, which is a leash-only trail except for dogs [4]"_ — model mangles a conditional policy
+- [ ] Garbled grounding: right chunk cited, wrong conclusion. Repro'd on
+      qwen 7B with the facts in context ("pay cash at the kiosk… however
+      kiosks are card-only [1]"). Recites conditionals fine ("what are the
+      hours" — perfect); breaks applying them to a date (Jan Tuesday,
+      Thanksgiving). Prompt won't fix it — try bigger model or a
+      draft→verify pass
 - [x] Poorly typed / malformed questions — RESOLVED by the stack, no
       typo-specific fix needed. Probed 2026-07-19 end-to-end with 6 typo'd
       questions ("mosoe", "vehical", "looop"...): 6/6 correct facts + correct
@@ -132,7 +136,23 @@ Known issues:
       was built, measured, REVERTED (corrupted 8/55 clean questions, worst on
       refusal traps — see `evals/EXPERIMENTS.md`). Keep it locked: add typo
       probes when the eval set grows
-- [ ] Cross-source answers cite only 1 of 2 required files
+- [ ] Cross-source answers cite only 1 of 2 required files. Also shows up
+      as half-answers: two-part question answered half right, half
+      improvised (dropped the Nov–Apr clause from a packed chunk)
+- [x] "are you sure" follow-ups — 3B retracted a correct answer, qwen
+      refused outright. Root cause: retrieval ran on the literal follow-up
+      text, so the needed chunk never came back (two prompt clauses tried
+      first, both failed, removed). Fixed with `llm.condense_query`: short
+      mid-conversation queries get rewritten standalone before retrieval.
+      Full eval re-run still pending. Statements ("I came and it was
+      closed") still flatten into the previous question — condenser assumes
+      follow-ups are questions
+- [x] Famous-fact leak: "who won the 2018 world cup" answered from world
+      knowledge with a fabricated citation. No retrieval-side fix possible
+      (no score floor — see difflib post-mortem). Fixed in CITE_REMINDER:
+      refuse even when certain from own knowledge; task requests (poem,
+      math, code) refuse too. Verified via chat.py; eval refusal probes
+      8 → 12
 
 > **Note — future chunking ideas**, each waiting for a corpus that exercises
 > it (don't build against synthetic files): sentence-boundary windowing,
