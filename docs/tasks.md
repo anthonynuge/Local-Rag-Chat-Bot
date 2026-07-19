@@ -125,8 +125,10 @@ Known issues:
       qwen 7B with the facts in context ("pay cash at the kiosk… however
       kiosks are card-only [1]"). Recites conditionals fine ("what are the
       hours" — perfect); breaks applying them to a date (Jan Tuesday,
-      Thanksgiving). Prompt won't fix it — try bigger model or a
-      draft→verify pass
+      Thanksgiving). Prompt won't fix it — confirmed 2026-07-19: tried
+      reasoning prompts, the model works out the right answer and then
+      refuses to state it (details in evals/EXPERIMENTS.md). Next: bigger
+      model, or a second pass that verifies the draft answer
 - [x] Poorly typed / malformed questions — RESOLVED by the stack, no
       typo-specific fix needed. Probed 2026-07-19 end-to-end with 6 typo'd
       questions ("mosoe", "vehical", "looop"...): 6/6 correct facts + correct

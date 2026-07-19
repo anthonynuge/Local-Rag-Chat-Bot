@@ -46,6 +46,37 @@ including when the answer is 'no' or 'none', answer and cite it" — and
 re-run these five plus the 12 refusal probes before accepting. Baseline
 NOT updated (run is red).
 
+## 2026-07-19 — Reasoning prompts for date questions. NOT ADOPTED
+
+**Question:** the model recites rules fine ("what are the hours") but fails
+to apply them to a specific date ("open on a Tuesday in January?") even with
+the right chunk in the prompt. Can a prompt that forces step-by-step
+reasoning fix that? Tested with env overrides only, no code. Four probes
+(one easy control + the three known failures), chat.py, qwen2.5:7b,
+ANSWER_RESERVE=1536.
+
+**Results:**
+
+| prompt | score | what happened |
+|---|---|---|
+| current prompt (baseline) | 2/4 | Thanksgiving refused; kiosk refused with a citation marker it shouldn't have |
+| think step-by-step in `<think>` tags | 1/4 | reasoned correctly, refused anyway — wrote "6 a.m. is before staffed hours" then answered "I don't have that information." |
+| same, plus "a conclusion you derived counts as answered" | 1.5/4 | gave the right answer, then added the refusal sentence right after it |
+| quote the evidence first, then a one-line conclusion (no think tags) | 2/4 | Jan Tuesday fixed, but kiosk became confidently wrong: said 6 a.m. is inside 07:00–19:00 |
+
+**Why it failed:** the model isn't missing reasoning — it reasons correctly
+and then won't commit to the conclusion. Each prompt change just moved the
+problem: the think versions refuse after working out the answer, and the
+version that forces an answer commits to a wrong time comparison. A wrong
+answer is worse than a refusal here. Thanksgiving failed in every version.
+
+**Takeaway:** prompts won't fix this, as tasks.md predicted. But the correct
+answer does show up inside the reasoning text — so a second pass that checks
+the draft (or a bigger model) should be able to recover it. Refusal probes
+were not re-run and no parsing code was built, since nothing won.
+
+## 2026-07-19 — Generalization check (sample-1) + heading-path chunking. KEPT
+
 **Generalization first:** the full current stack (hybrid retrieval, prompt
 v2, paragraph chunking) run on the sample-1 corpus (company docs — PTO,
 runbook, security policy; unseen since the old stack): retrieval 20/21 ->
