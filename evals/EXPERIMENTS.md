@@ -8,7 +8,43 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
-## 2026-07-19 — Generalization check (sample-1) + heading-path chunking. KEPT
+## 2026-07-19 — Full eval + judge after the refusal hardening + condenser. RED
+
+The delayed verification run for the two changes shipped without a full
+eval (famous-fact refusal hardening in CITE_REMINDER, and the follow-up
+condenser). Tests 25/25. Eval vs the last full run:
+
+| | before | after |
+|---|---|---|
+| retrieval | 46/47 | 46/47 |
+| citation | 33/35 | 30/35 |
+| refusal | 6/8 | 10/12 (set grew to 12) |
+| multi-turn sequences | 3/4 | 1/4 |
+| answer-correct (judge) | 39/47 (83%) | 33/47 (70%) |
+
+**What the hardening bought:** famous facts (World Cup, capital of China)
+and task requests now refuse cleanly, plus one trap question fixed.
+
+**What it cost:** five questions that used to be answered now refuse with
+the right chunk in the prompt — "Is there public WiFi anywhere in the
+park?" (a stated "no" in the corpus), the Shoulder Camp two-parter, the
+WiFi-password trick, and two multi-turn third turns (food storage,
+helicopter weather). Retrieval still hits on all five; the model refuses
+at generation. The new "even when you are certain from your own knowledge,
+do not answer" clause is over-applying: it also swallows answers the
+context does state, especially negative ones ("no WiFi") and applied ones.
+One refusal regressed in format (lost-and-found phone: explanation +
+citation after the exact phrase).
+
+**Condenser verdict:** clean as far as the eval can see. The one condensed
+turn that failed still retrieved the right chunk; its refusal happened at
+generation, same as the un-condensed failures. Not the condenser's doing.
+
+**Next:** soften the certainty clause so it only blocks answers that are
+NOT in the context — e.g. add "if the context does state the answer,
+including when the answer is 'no' or 'none', answer and cite it" — and
+re-run these five plus the 12 refusal probes before accepting. Baseline
+NOT updated (run is red).
 
 **Generalization first:** the full current stack (hybrid retrieval, prompt
 v2, paragraph chunking) run on the sample-1 corpus (company docs — PTO,
