@@ -120,12 +120,33 @@ def ask(client, message, history):
 
 
 def expected_sources_of(entry):
-    """The source file(s) an entry must hit. Cross-cutting questions list
-    several under `expected_sources`; simple ones give a single
-    `expected_source`. Always returns a list."""
+    """The source file(s) an entry must hit, as a list of GROUPS: the answer
+    must cite at least one file from every group. Covers all three shapes:
+      expected_source: "a.md"                  -> [["a.md"]]
+      expected_sources: ["a.md", "b.txt"]      -> [["a.md"], ["b.txt"]]  (needs both)
+      expected_sources: [["a.md", "faq.txt"]]  -> either file counts — for
+        facts the corpus states in more than one place"""
     if "expected_sources" in entry:
-        return entry["expected_sources"]
-    return [entry["expected_source"]]
+        raw = entry["expected_sources"]
+    else:
+        raw = [entry["expected_source"]]
+    groups = []
+    for item in raw:
+        if isinstance(item, list):
+            groups.append(item)
+        else:
+            groups.append([item])
+    return groups
+
+
+def covers(groups, sources):
+    """True when `sources` (a set) hits at least one file in every group."""
+    return all(set(group) & sources for group in groups)
+
+
+def group_label(groups):
+    """'a.md+b.txt' for required pairs, 'a.md|faq.txt' inside either-or groups."""
+    return "+".join("|".join(group) for group in groups)
 
 
 def retrieval_hit(index, question, expected_sources):
@@ -146,7 +167,7 @@ def retrieval_hit(index, question, expected_sources):
     sources = set()
     for chunk in chunks:
         sources.add(chunk["source"])
-    return set(expected_sources).issubset(sources), embed_seconds, search_seconds
+    return covers(expected_sources, sources), embed_seconds, search_seconds
 
 
 def sample_resources():
@@ -264,8 +285,8 @@ def run():
         answer, cited_sources, stats = ask(client, question, [])
         ttfts.append(stats["ttft_s"])
         speeds.append(stats["tok_s"])
-        # cross-cutting questions require EVERY expected file to be cited
-        cited = set(expected).issubset(cited_sources)
+        # cross-cutting questions require every expected GROUP to be cited
+        cited = covers(expected, cited_sources)
         tally = citation_by_label.setdefault(entry.get("label", "unlabeled"), [0, 0])
         tally[1] += 1
         if cited:
@@ -276,7 +297,7 @@ def run():
         status = paint("ok  ", GREEN) if cited else paint("MISS", RED)
         detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
         ret_flag = paint("ok  ", GREEN) if retrieved else paint("MISS", RED)
-        expected_label = "+".join(expected)
+        expected_label = group_label(expected)
         print(f"      {status} cite {expected_label:<24} ret={ret_flag} "
               f"[{entry.get('label', '')}]  {question!r}{detail}")
         if metrics_enabled:
@@ -327,13 +348,13 @@ def run():
             answer, cited_sources, stats = ask(client, question, history)
             ttfts.append(stats["ttft_s"])
             speeds.append(stats["tok_s"])
-            cited = set(expected).issubset(cited_sources)
+            cited = covers(expected, cited_sources)
             if not cited:
                 every_turn_cited = False
             status = paint("ok  ", GREEN) if cited else paint("MISS", RED)
             detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
             ret_flag = paint("ok  ", GREEN) if retrieved else paint("MISS", RED)
-            expected_label = "+".join(expected)
+            expected_label = group_label(expected)
             print(f"      {status} cite {expected_label:<24} ret={ret_flag} "
                   f"history={len(history)//2} turns  {question!r}{detail}")
             if metrics_enabled:

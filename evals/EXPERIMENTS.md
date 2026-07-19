@@ -8,6 +8,31 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-18 — TOP_K=4 tested, kept 6; eval gains either-or source groups
+
+**Rank sweep first (no LLM):** for all 47 questions, the rank at which every
+expected file appears in the cosine ranking. hit@2 = 42/47, hit@4 = 44/47,
+hit@6 = 45/47 — slots 5-6 buy exactly one question; the two k=6 misses sit
+at ranks 7 and 9 (elliptical follow-ups), unreachable at any sane k.
+
+**Ground-truth fix found during scoring:** the corpus states several facts
+in two files (summit height, filming fee, feeding fine, High Country
+elevation...), but eval.json accepted exactly one source — runs citing the
+valid alternate were penalized. eval.json entries now use either-or groups
+(`[["a.md", "faq.txt"]]` = either counts); eval.py `covers()` scores them.
+Both runs rescored offline from saved `cited_sources` — no re-runs needed.
+
+**TOP_K=4 vs 6 (both qwen2.5:7b, fair scoring):** citations 33/35 vs 32/35,
+multi-turn turns 10/12 vs 9/12, but answer-correct 35/47 (74%) vs 37/47
+(79%). k=4 fixed the Summit Route distractor flip exactly as predicted, then
+created two new flips (dog off-leash regressed to wrong, fall rut lost its
+rank-5 chunk and refused).
+
+**Kept TOP_K=6.** Every retrieval knob flips 3-5 borderline questions; at 47
+questions that churn (±2) exceeds the effect being chased. Lesson: grow the
+eval set before tuning retrieval knobs further. TOP_K=5 (same coverage as 6,
+one less distractor) left untested for the same reason.
+
 ## 2026-07-18 — Paragraph-aware .txt chunking
 
 **Change:** `.txt` files split at blank-line paragraph breaks before

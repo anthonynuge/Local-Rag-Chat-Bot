@@ -113,9 +113,9 @@ Fixes:
       fix (qwen cites while refusing)
 - [x] `.txt` chunking splits on blank-line paragraphs (`chunk.py`) — keeps
       FAQ Q/A pairs whole without format sniffing. Citations 77%→91% on 7B,
-      trout retrieval miss fixed (see `evals/EXPERIMENTS.md`). Follow-up
-      queued: TOP_K/score-threshold — more small chunks now compete for the
-      6 slots, costing cross-source questions
+      trout retrieval miss fixed (see `evals/EXPERIMENTS.md`). TOP_K=4
+      follow-up tested and rejected — churn exceeds signal at 47 questions;
+      grow the eval set before more retrieval tuning
 - [-] Hybrid BM25 + vector → [architecture.md#future-directions-out-of-scope-with-triggers](architecture.md) — defer until the above are measured
 
 Known issues:

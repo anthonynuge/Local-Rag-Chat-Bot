@@ -1,10 +1,10 @@
 {
-  "_README": "Question set for the expanded Thornmere corpus. Each entry carries a `label` (what the question tests) and a short reference `answer` (for eyeballing / future grading; eval.py does NOT auto-grade answer text). corpus/multi_turn entries use `expected_source` (single file) or `expected_sources` (list, for cross-cutting questions that need more than one file). Labels: factual = single-fact lookup; cross-source = needs >=2 files; trick-false-premise = question embeds a false assumption but the corpus contains the correction, so the model must still cite the correcting file; trap-undocumented = sounds answerable but the fact is genuinely absent, must refuse; off-topic = out of scope, must refuse.",
+  "_README": "Question set for the expanded Thornmere corpus. Each entry carries a `label` (what the question tests) and a short reference `answer` (eyeballing + scripts/judge.py grading). corpus/multi_turn entries use `expected_source` (single file) or `expected_sources` (list; every item must be cited). An item may itself be a list — an either-or group for facts the corpus states in more than one file, satisfied by citing ANY file in the group. Labels: factual = single-fact lookup; cross-source = needs >=2 files; trick-false-premise = question embeds a false assumption but the corpus contains the correction, so the model must still cite a correcting file; trap-undocumented = sounds answerable but the fact is genuinely absent, must refuse; off-topic = out of scope, must refuse.",
 
   "corpus": [
     {"label": "factual", "question": "How many hectares is Thornmere National Park?", "expected_source": "park-overview.md", "answer": "88,000 hectares."},
     {"label": "factual", "question": "How many sites does Larkspur Campground have?", "expected_source": "park-overview.md", "answer": "140 sites."},
-    {"label": "factual", "question": "How tall is Mount Thornmere?", "expected_source": "park-overview.md", "answer": "2,914 meters."},
+    {"label": "factual", "question": "How tall is Mount Thornmere?", "expected_sources": [["park-overview.md", "visitor-faq.txt"]], "answer": "2,914 meters."},
     {"label": "factual", "question": "On what date was the park's founding charter signed?", "expected_source": "park-overview.md", "answer": "June 14, 1978."},
     {"label": "factual", "question": "How many accessible campsites does Larkspur have?", "expected_source": "park-overview.md", "answer": "6 accessible sites (Coldpine has 2)."},
     {"label": "factual", "question": "How long is the Sable Ridge Trail and how much elevation does it gain?", "expected_source": "trail-guide.md", "answer": "11.4 km one-way, 780 m of gain."},
@@ -15,13 +15,13 @@
     {"label": "factual", "question": "What is the maximum group size on a single backcountry permit?", "expected_source": "permits-and-fees.md", "answer": "8 people."},
     {"label": "factual", "question": "How much does it cost to rent a bear canister?", "expected_source": "permits-and-fees.md", "answer": "$5 per night with a $60 refundable deposit."},
     {"label": "factual", "question": "What is the fee to replace a lost annual pass?", "expected_source": "permits-and-fees.md", "answer": "$10."},
-    {"label": "factual", "question": "How much is the application fee for a commercial filming permit?", "expected_source": "permits-and-fees.md", "answer": "$250, with a 21-day review."},
+    {"label": "factual", "question": "How much is the application fee for a commercial filming permit?", "expected_sources": [["permits-and-fees.md", "visitor-faq.txt"]], "answer": "$250, with a 21-day review."},
     {"label": "factual", "question": "How long after an overdue report does a hasty search launch?", "expected_source": "ranger-operations.md", "answer": "If the party isn't located within 2 hours of the initial report."},
     {"label": "factual", "question": "Who is allowed to request the helicopter during a search and rescue?", "expected_source": "ranger-operations.md", "answer": "Only the superintendent (Dana Whitlock) or the designated acting superintendent."},
     {"label": "factual", "question": "After how many hours without a confirmed clue is a K9 team requested?", "expected_source": "ranger-operations.md", "answer": "12 hours (earlier at the IC's discretion for a child or medical case)."},
     {"label": "factual", "question": "How many permanent rangers does the division have?", "expected_source": "ranger-operations.md", "answer": "11 permanent, plus 9 seasonal (May 1 - Oct 15)."},
     {"label": "factual", "question": "How far from your tent must food be stored in the backcountry?", "expected_source": "wildlife-safety.txt", "answer": "At least 60 meters (hard-sided canister required in the High Country)."},
-    {"label": "factual", "question": "What is the fine for feeding wildlife?", "expected_source": "wildlife-safety.txt", "answer": "$175 per incident."},
+    {"label": "factual", "question": "What is the fine for feeding wildlife?", "expected_sources": [["wildlife-safety.txt", "visitor-faq.txt"]], "answer": "$175 per incident."},
     {"label": "factual", "question": "What is the effective range of bear spray?", "expected_source": "wildlife-safety.txt", "answer": "About 8 meters."},
     {"label": "factual", "question": "How often does the Ridge Runner shuttle run?", "expected_source": "visitor-faq.txt", "answer": "Every 20 minutes, May 15 - Oct 15."},
     {"label": "factual", "question": "What is the daily trout limit at Mirrorbend Lake?", "expected_source": "visitor-faq.txt", "answer": "4 trout per day."},
@@ -29,13 +29,13 @@
 
     {"label": "cross-source", "question": "I'm planning an overnight on the Sable Ridge Trail. How far in is the first campsite, and what must I store my food in there?", "expected_sources": ["trail-guide.md", "wildlife-safety.txt"], "answer": "Sable Camp is at km 7.9; the High Country zone requires a hard-sided bear canister."},
     {"label": "cross-source", "question": "Does riding the shuttle cost anything, and do I still need an entrance pass to use it?", "expected_sources": ["visitor-faq.txt", "permits-and-fees.md"], "answer": "The shuttle is free with any valid pass; foot/shuttle entry is the $9 per-person day pass."},
-    {"label": "cross-source", "question": "What elevation defines the High Country zone, and when is its overnight quota in effect?", "expected_sources": ["park-overview.md", "permits-and-fees.md"], "answer": "High Country is 2,100 m and above; its nightly quota runs May 15 - Sep 30."},
+    {"label": "cross-source", "question": "What elevation defines the High Country zone, and when is its overnight quota in effect?", "expected_sources": [["park-overview.md", "visitor-faq.txt"], "permits-and-fees.md"], "answer": "High Country is 2,100 m and above; its nightly quota runs May 15 - Sep 30."},
     {"label": "cross-source", "question": "How much is a Larkspur lakeside site per night, and how many sites does Larkspur have in total?", "expected_sources": ["permits-and-fees.md", "park-overview.md"], "answer": "Lakeside sites are $36/night; Larkspur has 140 sites total."},
     {"label": "cross-source", "question": "I want to camp at Shoulder Camp. What marker post is it at, and what's the group-size limit on the permit I'd need?", "expected_sources": ["trail-guide.md", "permits-and-fees.md"], "answer": "Shoulder Camp is at post Sable 14; the permit group-size limit is 8 people."},
 
-    {"label": "trick-false-premise", "question": "Which trail can I let my dog off-leash on?", "expected_source": "visitor-faq.txt", "answer": "None. Dogs must stay leashed (<=2 m) and are only allowed on the Mirrorbend Lakeshore Path and inside the campgrounds."},
+    {"label": "trick-false-premise", "question": "Which trail can I let my dog off-leash on?", "expected_sources": [["visitor-faq.txt", "trail-guide.md"]], "answer": "None. Dogs must stay leashed (<=2 m) and are only allowed on the Mirrorbend Lakeshore Path and inside the campgrounds."},
     {"label": "trick-false-premise", "question": "What's the senior discount on the annual pass?", "expected_source": "permits-and-fees.md", "answer": "There is no senior discount; seniors pay the standard rate."},
-    {"label": "trick-false-premise", "question": "How do I reserve a campsite at Coldpine Campground?", "expected_source": "permits-and-fees.md", "answer": "Coldpine can't be reserved; it's first-come, first-served with self-registration envelopes."},
+    {"label": "trick-false-premise", "question": "How do I reserve a campsite at Coldpine Campground?", "expected_sources": [["permits-and-fees.md", "park-overview.md"]], "answer": "Coldpine can't be reserved; it's first-come, first-served with self-registration envelopes."},
     {"label": "trick-false-premise", "question": "Which backcountry campsite on the Sable Ridge Trail has a toilet?", "expected_source": "trail-guide.md", "answer": "Neither. Sable Camp and Shoulder Camp have no privy; a pack-it-out/cathole standard applies."},
     {"label": "trick-false-premise", "question": "The park has five zones - which one is the busiest?", "expected_source": "park-overview.md", "answer": "The park has four zones, not five; the busiest is the Gorge zone."},
     {"label": "trick-false-premise", "question": "What's the WiFi password at the Fernline Visitor Center?", "expected_source": "visitor-faq.txt", "answer": "There is no WiFi at the visitor center or anywhere in the park, so there's no password."}
@@ -58,7 +58,7 @@
       "turns": [
         {"label": "factual", "question": "What does a backcountry permit cost?", "expected_source": "permits-and-fees.md", "answer": "$12 per person per night."},
         {"label": "factual", "question": "What's the maximum group size on one permit?", "expected_source": "permits-and-fees.md", "answer": "8 people."},
-        {"label": "factual", "question": "And what do I need to store my food in up there?", "expected_source": "permits-and-fees.md", "answer": "A hard-sided bear canister (required in the High Country)."}
+        {"label": "factual", "question": "And what do I need to store my food in up there?", "expected_sources": [["permits-and-fees.md", "wildlife-safety.txt"]], "answer": "A hard-sided bear canister (required in the High Country)."}
       ]
     },
     {
@@ -82,7 +82,7 @@
       "turns": [
         {"label": "factual", "question": "How far should I stay from a moose?", "expected_source": "wildlife-safety.txt", "answer": "At least 25 meters."},
         {"label": "factual", "question": "What about during the fall rut?", "expected_source": "wildlife-safety.txt", "answer": "Much more; the rut runs September 15 - October 31."},
-        {"label": "factual", "question": "And what's the fine if someone is caught feeding wildlife?", "expected_source": "wildlife-safety.txt", "answer": "$175 per incident."}
+        {"label": "factual", "question": "And what's the fine if someone is caught feeding wildlife?", "expected_sources": [["wildlife-safety.txt", "visitor-faq.txt"]], "answer": "$175 per incident."}
       ]
     }
   ]
