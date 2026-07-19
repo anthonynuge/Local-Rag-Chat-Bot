@@ -134,6 +134,11 @@ Known issues:
       probes when the eval set grows
 - [ ] Cross-source answers cite only 1 of 2 required files
 
+> **Note — future chunking ideas**, each waiting for a corpus that exercises
+> it (don't build against synthetic files): sentence-boundary windowing,
+> .txt hierarchy detection onto the heading-path stack, atomic tables,
+> embed-side table linearization, MMR redundancy penalty in top_k.
+
 ## Phase 11 — Release
 
 - [ ] `README.md` demo script verified end-to-end
