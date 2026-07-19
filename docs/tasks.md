@@ -92,6 +92,23 @@ Can start any time after Phase 1 — the stub endpoint serves the contract.
       reveal — client-side pacing, the stream itself is never throttled)
 - [x] `CitationList`, loading/disabled/error states, `HealthDot` from `/api/health`
 
+## Phase 10.5 — Accuracy pass / issue list _(fix before release)_
+
+sample-v3 eval: retrieval 98% but citation 69% — the right chunk is retrieved,
+then the 3B model cites or renders it wrong. Fix grounding, not recall. Most
+issues below may be symptoms of the 3B ceiling — try the model swap first.
+
+Fixes:
+- [ ] Answer-correctness judge in `eval.py` (local `JUDGE_MODEL`, report-only) — do first, so changes are measured not guessed
+- [ ] Model swap `MODEL=qwen2.5:7b`, re-run eval vs v3 baseline — cheapest lever, likely helps the issues below too
+- [ ] FAQ-aware `.txt` chunking in `chunk.py` — `visitor-faq.txt` splits Q from A
+- [-] Hybrid BM25 + vector → [architecture.md#future-directions-out-of-scope-with-triggers](architecture.md) — defer until the above are measured
+
+Known issues:
+- [ ] Garbled grounding: cited correctly but the answer is self-contradictory. E.g. _"off-leash only on the Mirrorbend Lakeshore Path, which is a leash-only trail except for dogs [4]"_ — model mangles a conditional policy
+- [ ] Poorly typed / malformed questions get no response — typos embed poorly, retrieval misses, model refuses. Needs input-robustness (query normalization?) beyond the model swap
+- [ ] Cross-source answers cite only 1 of 2 required files
+
 ## Phase 11 — Release
 
 - [ ] `README.md` demo script verified end-to-end

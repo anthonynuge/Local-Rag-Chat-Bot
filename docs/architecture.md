@@ -217,10 +217,12 @@ off at demo scale:
 
 - **Reranker (cross-encoder).** Add when retrieval quality is the bottleneck:
   top-k returns topically-close-but-wrong chunks. At a handful of files, cosine
-  rank is already near-perfect.
+  rank is already near-perfect. _(trigger now met — see tasks.md Phase 10.5;
+  deferred pending model-swap + chunking results)_
 - **Hybrid retrieval (BM25 + vectors).** Add when queries lean on exact tokens
   embeddings blur — IDs, error codes, function names. Pure semantic search is
-  fine for prose Q&A.
+  fine for prose Q&A. _(trigger now met — see tasks.md Phase 10.5; deferred
+  pending model-swap + chunking results)_
 - **Vector DB (e.g. sqlite-vec, LanceDB).** At ~100x corpus size, when
   brute-force cosine or index load time becomes measurable.
 - **Real model tokenizer.** Swap tiktoken for the llama tokenizer if measured
