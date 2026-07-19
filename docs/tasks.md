@@ -123,16 +123,15 @@ Fixes:
 
 Known issues:
 - [ ] Garbled grounding: cited correctly but the answer is self-contradictory. E.g. _"off-leash only on the Mirrorbend Lakeshore Path, which is a leash-only trail except for dogs [4]"_ — model mangles a conditional policy
-- [ ] Poorly typed / malformed questions — issue is smaller than logged
-      (3B-era). Measured 2026-07-19 (see `evals/EXPERIMENTS.md`): the
-      embedder is already typo-tolerant (typo'd queries score 0.54–0.70,
-      inside the normal range), and `difflib` vocab repair was built, tested
-      and REVERTED — it corrupted 8/55 legitimate questions ("earn"→"ear",
-      "died"→"did"), hitting refusal traps hardest, and no confidence gate
-      can separate typos from legit questions (score ranges overlap).
-      Remaining plan: typo/ellipsis probes when the eval set grows; if real
-      misses show up, a small-LLM rephrase as a low-score-triggered
-      fallback — never always-on, and never vocab-based repair
+- [x] Poorly typed / malformed questions — RESOLVED by the stack, no
+      typo-specific fix needed. Probed 2026-07-19 end-to-end with 6 typo'd
+      questions ("mosoe", "vehical", "looop"...): 6/6 correct facts + correct
+      citations on BOTH llama3.2:3b and qwen2.5:7b. Why: nomic-embed is
+      typo-tolerant, BM25 degrades gracefully (typo'd token = no vote, cosine
+      carries it), prompt v2 stopped eager refusals. `difflib` vocab repair
+      was built, measured, REVERTED (corrupted 8/55 clean questions, worst on
+      refusal traps — see `evals/EXPERIMENTS.md`). Keep it locked: add typo
+      probes when the eval set grows
 - [ ] Cross-source answers cite only 1 of 2 required files
 
 ## Phase 11 — Release

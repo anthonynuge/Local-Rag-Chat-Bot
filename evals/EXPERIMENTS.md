@@ -31,6 +31,14 @@ wiring it — this one failed its no-op check in five minutes and never cost
 an eval run. Revisit only with typo probes in a grown eval set, and then as
 a low-score-triggered small-LLM rephrase, not vocab repair.
 
+**End-to-end follow-up (same day):** 6 typo'd questions ("mosoe",
+"vehical", "dailyy", "trial" for trail...) through the live pipeline:
+6/6 correct facts + correct citations on llama3.2:3b AND qwen2.5:7b.
+The Phase 10.5 "malformed questions" issue is resolved by the current
+stack with no typo-specific code: typo-tolerant embeddings + BM25's
+graceful no-vote degradation + prompt v2's refusal ladder. The issue was
+the OLD stack (3B-era eager refusals), not typos per se.
+
 ## 2026-07-18 — Prompt v2: refusal exact-reply + premise-correction ladder. KEPT
 
 **Change (config.py defaults):** SYSTEM_PROMPT gains a premise-correction
