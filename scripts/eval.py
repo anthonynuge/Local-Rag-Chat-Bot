@@ -119,8 +119,17 @@ def ask(client, message, history):
     return answer, cited_sources, stats
 
 
-def retrieval_hit(index, question, expected_source):
-    """(hit, embed_seconds, search_seconds): is the expected file in top-k?
+def expected_sources_of(entry):
+    """The source file(s) an entry must hit. Cross-cutting questions list
+    several under `expected_sources`; simple ones give a single
+    `expected_source`. Always returns a list."""
+    if "expected_sources" in entry:
+        return entry["expected_sources"]
+    return [entry["expected_source"]]
+
+
+def retrieval_hit(index, question, expected_sources):
+    """(hit, embed_seconds, search_seconds): are ALL expected files in top-k?
 
     Same embed -> top_k path the endpoint uses; computed here because the
     citations SSE event only carries chunks the answer actually cited. The
@@ -137,7 +146,7 @@ def retrieval_hit(index, question, expected_source):
     sources = set()
     for chunk in chunks:
         sources.add(chunk["source"])
-    return expected_source in sources, embed_seconds, search_seconds
+    return set(expected_sources).issubset(sources), embed_seconds, search_seconds
 
 
 def sample_resources():
@@ -244,9 +253,10 @@ def run():
 
     print(paint(f"\n[3/5] in-corpus: {len(corpus_questions)} questions ...", BOLD))
     cited_correctly = 0
+    citation_by_label = {}  # label -> [cited, total], to break the rate out by question type
     for entry in corpus_questions:
         question = entry["question"]
-        expected = entry["expected_source"]
+        expected = expected_sources_of(entry)
         retrieval_checks += 1
         retrieved, embed_seconds, search_seconds = retrieval_hit(index, question, expected)
         if retrieved:
@@ -254,21 +264,27 @@ def run():
         answer, cited_sources, stats = ask(client, question, [])
         ttfts.append(stats["ttft_s"])
         speeds.append(stats["tok_s"])
-        cited = expected in cited_sources
+        # cross-cutting questions require EVERY expected file to be cited
+        cited = set(expected).issubset(cited_sources)
+        tally = citation_by_label.setdefault(entry.get("label", "unlabeled"), [0, 0])
+        tally[1] += 1
         if cited:
             cited_correctly += 1
+            tally[0] += 1
         # pad BEFORE painting — the invisible color codes would break
         # f-string column alignment otherwise
         status = paint("ok  ", GREEN) if cited else paint("MISS", RED)
         detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
         ret_flag = paint("ok  ", GREEN) if retrieved else paint("MISS", RED)
-        print(f"      {status} cite {expected:<20} ret={ret_flag} "
-              f"ttft={stats['ttft_s']:.2f}s {stats['tok_s']:5.1f} tok/s  {question!r}{detail}")
+        expected_label = "+".join(expected)
+        print(f"      {status} cite {expected_label:<24} ret={ret_flag} "
+              f"[{entry.get('label', '')}]  {question!r}{detail}")
         if metrics_enabled:
             print_query_metrics(question, embed_seconds, search_seconds, stats)
         records.append(make_record(
             "corpus", question, stats,
-            expected_source=expected, retrieved=retrieved, cited=cited,
+            label=entry.get("label"), reference_answer=entry.get("answer"),
+            expected_sources=expected, retrieved=retrieved, cited=cited,
             cited_sources=sorted(cited_sources),
             embed_ms=round(embed_seconds * 1000, 1),
             search_ms=round(search_seconds * 1000, 2),
@@ -289,6 +305,7 @@ def run():
             print_query_metrics(question, 0.0, 0.0, stats)
         records.append(make_record(
             "refusal", question, stats,
+            label=entry.get("label"), reference_answer=entry.get("answer"),
             refused=cited_sources == set(), cited_sources=sorted(cited_sources),
         ))
 
@@ -300,7 +317,7 @@ def run():
         print(f"      -- {sequence['name']}")
         for turn in sequence["turns"]:
             question = turn["question"]
-            expected = turn["expected_source"]
+            expected = expected_sources_of(turn)
             retrieval_checks += 1
             retrieved, embed_seconds, search_seconds = retrieval_hit(index, question, expected)
             if retrieved:
@@ -308,20 +325,22 @@ def run():
             answer, cited_sources, stats = ask(client, question, history)
             ttfts.append(stats["ttft_s"])
             speeds.append(stats["tok_s"])
-            cited = expected in cited_sources
+            cited = set(expected).issubset(cited_sources)
             if not cited:
                 every_turn_cited = False
             status = paint("ok  ", GREEN) if cited else paint("MISS", RED)
             detail = "" if cited else f"  (cited {sorted(cited_sources)}, answer: {answer[:90]!r})"
             ret_flag = paint("ok  ", GREEN) if retrieved else paint("MISS", RED)
-            print(f"      {status} cite {expected:<20} ret={ret_flag} "
+            expected_label = "+".join(expected)
+            print(f"      {status} cite {expected_label:<24} ret={ret_flag} "
                   f"history={len(history)//2} turns  {question!r}{detail}")
             if metrics_enabled:
                 print_query_metrics(question, embed_seconds, search_seconds, stats)
             records.append(make_record(
                 "multi_turn", question, stats,
                 sequence=sequence["name"], history_turns=len(history) // 2,
-                expected_source=expected, retrieved=retrieved, cited=cited,
+                label=turn.get("label"), reference_answer=turn.get("answer"),
+                expected_sources=expected, retrieved=retrieved, cited=cited,
                 cited_sources=sorted(cited_sources),
                 embed_ms=round(embed_seconds * 1000, 1),
                 search_ms=round(search_seconds * 1000, 2),
@@ -353,6 +372,11 @@ def run():
           f"({100 * retrieval_hits / retrieval_checks:.0f}%)")
     print(f"citation-rate:      {paint_rate(cited_correctly, len(corpus_questions))} "
           f"({100 * cited_correctly / len(corpus_questions):.0f}%)")
+    # break the headline citation number out by question type — a trick-question
+    # "pass" only means the right file was cited, not that the premise was handled
+    for label in sorted(citation_by_label):
+        passed, total = citation_by_label[label]
+        print(f"    - {label + ':':<22}{paint_rate(passed, total)}")
     print(f"refusal-rate:       {paint_rate(refused, len(refusal_questions))} "
           f"({100 * refused / len(refusal_questions):.0f}%)")
     print(f"multi-turn:         {paint_rate(passed_sequences, len(sequences))} sequences")
@@ -389,6 +413,7 @@ def run():
         "timestamp": datetime.now().isoformat(timespec="seconds"),
         "config": config_snapshot,
         "rates": rates,
+        "citation_by_label": citation_by_label,
         "ttft_avg_s": round(sum(ttfts) / total_requests, 3),
         "tok_s_avg": round(sum(speeds) / total_requests, 1),
         "failing_checks": failing,
