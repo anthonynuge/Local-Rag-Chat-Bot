@@ -53,7 +53,6 @@ function useSmoothText(target: string, streaming: boolean): string {
 
   useEffect(() => {
     if (!streaming) {
-      setVisibleCount(target.length)
       return
     }
 
@@ -72,7 +71,8 @@ function useSmoothText(target: string, streaming: boolean): string {
     return () => clearInterval(timer)
   }, [target, streaming])
 
-  return target.slice(0, visibleCount)
+  // Done streaming: show everything, no state update needed.
+  return streaming ? target.slice(0, visibleCount) : target
 }
 
 function ThinkingDots() {
