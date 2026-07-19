@@ -1,6 +1,8 @@
 """Heading-aware chunking: split .md on headings (keep sections whole),
 window anything longer than CHUNK_TOKENS with CHUNK_OVERLAP. .txt has no
-headings -> windowed directly.
+headings, but blank-line paragraphs are still real structure -> split there,
+so a window never cuts mid-thought (an FAQ's Q/A pair, being one paragraph,
+stays whole for free).
 """
 import re
 from dataclasses import dataclass
@@ -65,6 +67,16 @@ def _sections(text):
     return sections
 
 
+def _paragraphs(text):
+    """Split .txt at blank-line paragraph breaks — the only structure plain
+    text reliably has. No format sniffing (FAQ markers, list styles): any
+    paragraph-shaped unit stays whole unless it alone exceeds the window."""
+    # Blank line(s) = paragraph break; tolerate trailing spaces on the
+    # "blank" line, which editors leave behind in hand-written .txt files.
+    parts = re.split(r"\n[ \t]*\n", text)
+    return [part for part in parts if part.strip()]
+
+
 def chunk_file(path):
     """One source file -> list of Chunks with gapless per-file idx."""
     text = path.read_text(encoding="utf-8")
@@ -75,8 +87,9 @@ def chunk_file(path):
             for window in _window(body):
                 pieces.append((heading, window))
     else:
-        for window in _window(text):
-            pieces.append(("", window))
+        for paragraph in _paragraphs(text):
+            for window in _window(paragraph):
+                pieces.append(("", window))
 
     chunks = []
     for heading, piece_text in pieces:

@@ -8,6 +8,31 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-18 — Paragraph-aware .txt chunking
+
+**Change:** `.txt` files split at blank-line paragraph breaks before
+windowing (`chunk.py`), instead of sliding a 400-token window across the
+whole file. No format sniffing — an FAQ's Q/A pair stays whole because it's
+one paragraph, not because the code knows what an FAQ is. Both runs
+qwen2.5:7b.
+
+| | before | after |
+|---|---|---|
+| citation-rate | 27/35 (77%) | 32/35 (91%) |
+| factual citations | 21/24 | 24/24 |
+| trick citations | 3/6 | 6/6 |
+| cross-source citations | 3/5 | 2/5 |
+| retrieval | 46/47 | 45/47 |
+| answer-correct (judge) | 38/47 (81%) | 37/47 (79%) |
+
+**Kept.** Single-file citations perfect; the trout-limit retrieval miss
+(the only one in the corpus set) is fixed. Cost: ~3x more small .txt chunks
+compete for the fixed TOP_K=6 slots, so multi-file questions lost a little
+retrieval/citation ground — that's the TOP_K / score-threshold experiment's
+territory, queued next. Also logged: qwen padded the fall-rut answer with an
+unsupported "50 meters" figure — its failure mode is embellishment, not
+reversal.
+
 ## 2026-07-18 — Model swap: llama3.2:3b → qwen2.5:7b
 
 **Change:** `MODEL=qwen2.5:7b`, nothing else. Run vs the post-corpus-fix 3B run.

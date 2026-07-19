@@ -36,6 +36,24 @@ def test_long_text_windows_with_overlap(tmp_path):
         assert a.text[-20:] in b.text  # tail of one window appears in the next
 
 
+def test_txt_splits_on_paragraphs_keeping_them_whole(tmp_path):
+    # multi-line paragraphs (like an FAQ's Q/A pair) must not be separated;
+    # the paragraph break is the only boundary a window may cut at
+    f = tmp_path / "notes.txt"
+    f.write_text(
+        "Q: How often does the shuttle run?\n"
+        "A: Every 20 minutes in season.\n"
+        "\n"
+        "second paragraph about moose\n",
+        encoding="utf-8",
+    )
+    chunks = chunk_file(f)
+    assert len(chunks) == 2
+    assert [c.heading for c in chunks] == ["", ""]  # .txt never invents headings
+    assert "shuttle" in chunks[0].text and "Every 20 minutes" in chunks[0].text
+    assert "moose" in chunks[1].text
+
+
 def test_md_sections_kept_whole(tmp_path):
     f = tmp_path / "doc.md"
     f.write_text("# Title\nintro\n## Section A\nbody a\n## Section B\nbody b\n", encoding="utf-8")
