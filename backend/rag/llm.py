@@ -25,6 +25,21 @@ def chat(messages):
     return _client.chat(model=config.MODEL, messages=messages, stream=True, options=options)
 
 
+def judge(prompt, schema):
+    """One-shot non-streaming completion on JUDGE_MODEL, output constrained
+    to schema-shaped JSON (Ollama structured outputs). Dev tooling for
+    scripts/judge.py only — never on the serving path, so NUM_CTX/budget
+    rules don't apply; the per-item judge prompt is small anyway."""
+    response = _client.chat(
+        model=config.JUDGE_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        stream=False,
+        format=schema,
+        options={"temperature": 0.0, "num_ctx": 4096},
+    )
+    return response["message"]["content"]
+
+
 def available_models():
     """Names of locally pulled models; raises when Ollama is unreachable."""
     return [m["model"] for m in _client.list()["models"]]

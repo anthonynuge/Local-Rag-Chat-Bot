@@ -284,6 +284,7 @@ def run():
         records.append(make_record(
             "corpus", question, stats,
             label=entry.get("label"), reference_answer=entry.get("answer"),
+            answer=answer,
             expected_sources=expected, retrieved=retrieved, cited=cited,
             cited_sources=sorted(cited_sources),
             embed_ms=round(embed_seconds * 1000, 1),
@@ -306,6 +307,7 @@ def run():
         records.append(make_record(
             "refusal", question, stats,
             label=entry.get("label"), reference_answer=entry.get("answer"),
+            answer=answer,
             refused=cited_sources == set(), cited_sources=sorted(cited_sources),
         ))
 
@@ -340,6 +342,7 @@ def run():
                 "multi_turn", question, stats,
                 sequence=sequence["name"], history_turns=len(history) // 2,
                 label=turn.get("label"), reference_answer=turn.get("answer"),
+                answer=answer,
                 expected_sources=expected, retrieved=retrieved, cited=cited,
                 cited_sources=sorted(cited_sources),
                 embed_ms=round(embed_seconds * 1000, 1),

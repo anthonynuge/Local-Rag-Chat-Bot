@@ -99,7 +99,13 @@ then the 3B model cites or renders it wrong. Fix grounding, not recall. Most
 issues below may be symptoms of the 3B ceiling — try the model swap first.
 
 Fixes:
-- [ ] Answer-correctness judge in `eval.py` (local `JUDGE_MODEL`, report-only) — do first, so changes are measured not guessed
+- [ ] Answer-correctness judge: `scripts/judge.py` grades a saved run with
+      local `JUDGE_MODEL` (default gemma4:latest — free, and a different
+      family from the answering model). Report-only: correctness vs
+      reference + self-contradiction flag — do first, so changes are
+      measured not guessed. Ragas evaluated and skipped — its claim-check
+      idea is in the judge prompt; the framework (LangChain wrappers +
+      `datasets` dep, churny API) isn't worth it at 35 questions
 - [ ] Model swap `MODEL=qwen2.5:7b`, re-run eval vs v3 baseline — cheapest lever, likely helps the issues below too
 - [ ] FAQ-aware `.txt` chunking in `chunk.py` — `visitor-faq.txt` splits Q from A
 - [-] Hybrid BM25 + vector → [architecture.md#future-directions-out-of-scope-with-triggers](architecture.md) — defer until the above are measured
