@@ -178,8 +178,11 @@ evals/               # EXPERIMENTS.md log + raw run JSONs
 
 The eval harness runs every question through the live pipeline and scores
 retrieval, citations, refusals, and multi-turn sequences against a committed
-baseline; a separate local judge model grades answer text against reference
-answers. One measured day took citation accuracy 69% → 94% and judged
+baseline. A separate judge model (`JUDGE_MODEL`, default `gemma4:latest`)
+grades answer text against reference answers — the judge is a development
+and testing tool only: it is never part of the serving pipeline, isn't
+needed to run the app, and its grades are LLM output, so they're indicative
+rather than deterministic (the deterministic checks live in `pytest`). One measured day took citation accuracy 69% → 94% and judged
 correctness 72% → 83% — the trajectory, and what each change bought, is in
 [docs/results.md](docs/results.md). Every experiment since (including the
 ones that lost and got reverted) is written up in
