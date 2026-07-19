@@ -31,4 +31,6 @@ uv run python ../scripts/eval.py [data_dir] # quality rates vs baseline.json
 uv run python ../scripts/chat.py [data_dir] # interactive debug REPL (shows chunks/prompt)
 ```
 
+`scripts/dev.ps1` / `scripts/dev.sh` (from repo root) start backend + frontend together.
+
 Trunk-based: short branches off `main`, local squash-merge; `pytest tests` green before every merge.

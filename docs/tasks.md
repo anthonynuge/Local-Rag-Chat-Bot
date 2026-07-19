@@ -28,7 +28,7 @@ rails that already serve traffic.
 - [x] Stub `POST /api/chat`: streams a canned SSE sequence per the contract
       (token → citations → done) — frontend can integrate from day one
 - [x] CORS for the frontend origin
-- [-] `scripts/dev.ps1`: deferred — one `uvicorn` command is enough until the frontend exists; revisit in Phase 8
+- [x] `scripts/dev.ps1` + `dev.sh`: one command starts both servers (added at release; deferred until then — one `uvicorn` command was enough pre-frontend)
 - [x] Test: health returns 200; stub emits contract-shaped events
 
 ## Phase 2 — Sample corpus
@@ -163,8 +163,9 @@ Known issues:
 
 ## Phase 11 — Release
 
-- [ ] `README.md` demo script verified end-to-end
-- [ ] Final calibration pass, cleanup / lint
+- [x] `README.md` demo script verified end-to-end (smoke: citation ok,
+      budget drift +2.5% vs 10% margin; frontend lint + build clean)
+- [x] Final calibration pass, cleanup / lint
 
 ---
 

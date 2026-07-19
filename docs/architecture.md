@@ -161,7 +161,7 @@ Stateless server: the client sends history each turn (see
 [api-contract.md](api-contract.md)); the budgeter applies the sliding window.
 Cross-restart persistence is out of scope for the demo.
 
-## Config (`rag/config.py`, env-overridable)
+## <a id="config"></a>Config (`rag/config.py`, env-overridable)
 
 Every knob lives here, each overridable by an env var of the same name:
 
