@@ -8,6 +8,29 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-19 — difflib query typo-repair: built, measured, REVERTED
+
+**Idea:** replace query words absent from the corpus vocabulary with their
+closest corpus word (difflib, deterministic, retrieval-side only) to fix
+the "typos embed poorly" issue from the Phase 10.5 list.
+
+**Why it died — two measurements:**
+1. "Not in vocabulary" cannot distinguish a typo from a legitimately absent
+   word at this corpus size. The repair corrupted 8/55 clean eval questions
+   ("earn"→"ear", "died"→"did", "tall"→"stall", "tour"→"detour") — and the
+   worst victims were refusal traps, whose words are SUPPOSED to be absent.
+2. The planned rescue (only repair when retrieval confidence is low) is
+   impossible: typo'd queries score 0.54–0.70, inside the answerable range
+   (min 0.532), and refusal questions reach 0.778 — the distributions
+   overlap; no floor separates them. Bonus finding: nomic-embed is already
+   substantially typo-tolerant, so the 3B-era issue was probably mostly the
+   old model's refusal-happiness, not retrieval.
+
+**Lesson:** verify a "safe deterministic" fix against the eval set before
+wiring it — this one failed its no-op check in five minutes and never cost
+an eval run. Revisit only with typo probes in a grown eval set, and then as
+a low-score-triggered small-LLM rephrase, not vocab repair.
+
 ## 2026-07-18 — Prompt v2: refusal exact-reply + premise-correction ladder. KEPT
 
 **Change (config.py defaults):** SYSTEM_PROMPT gains a premise-correction
