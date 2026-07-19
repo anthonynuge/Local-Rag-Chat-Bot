@@ -161,8 +161,13 @@ def chat(req: ChatRequest) -> StreamingResponse:
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
 
-    query_vec = llm.embed([question])[0]  # embed() is batch-shaped; one question -> row 0
-    ranked = get_index().top_k(query_vec, question)
+    # Retrieval-side only: the packed prompt below still uses the literal question.
+    search_query = llm.condense_query(question, req.history)
+    if search_query != question:
+        logger.info("condensed: %r -> %r", question[:80], search_query[:80])
+
+    query_vec = llm.embed([search_query])[0]  # embed() is batch-shaped; one question -> row 0
+    ranked = get_index().top_k(query_vec, search_query)
     messages, citations, report = budget.pack(config.SYSTEM_PROMPT, question, ranked, req.history)
 
     # Retrieval trace: what came back, how confident, and whether pack() kept it.

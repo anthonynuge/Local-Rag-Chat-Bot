@@ -25,6 +25,36 @@ def chat(messages):
     return _client.chat(model=config.MODEL, messages=messages, stream=True, options=options)
 
 
+def condense_query(question, history):
+    """The question to retrieve with. First turns and content-rich questions
+    pass through untouched; a short follow-up ("are you sure") is rewritten
+    into a standalone question so retrieval gets its meaning, not its words.
+    Serving path: its own small prompt stays far under the 6K ceiling."""
+    if not history:
+        return question
+    if len(question.split()) > config.CONDENSE_MAX_WORDS:
+        return question
+
+    recent = history[-4:]  # last two turns carry the referent; older ones just add tokens
+    transcript = ""
+    for message in recent:
+        transcript += f"{message['role']}: {message['content']}\n"
+    prompt = f"{config.CONDENSE_PROMPT}\n\n{transcript}user: {question}"
+
+    response = _client.chat(
+        model=config.CONDENSER_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        stream=False,
+        # num_ctx MUST match chat's: a different value makes Ollama rebuild the
+        # runner on every switch — seconds of reload per follow-up turn.
+        options={"temperature": 0.0, "num_ctx": config.NUM_CTX, "num_predict": 80},
+    )
+    rewritten = response["message"]["content"].strip().strip('"')
+    if not rewritten:  # a blank rewrite must never replace a real question
+        return question
+    return rewritten
+
+
 def judge(prompt, schema):
     """One-shot non-streaming completion on JUDGE_MODEL, output constrained
     to schema-shaped JSON (Ollama structured outputs). Dev tooling for

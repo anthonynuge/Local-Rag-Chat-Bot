@@ -38,7 +38,25 @@ CITE_REMINDER = os.getenv(
     "cite the correcting source — that counts as an answer, not a refusal. "
     "Only when the context offers neither the answer nor a correction, reply "
     "with exactly: \"I don't have that information.\" — no citation markers, "
-    "nothing else.",
+    "nothing else. This applies even when you are certain of the answer from "
+    "your own knowledge (famous facts, general knowledge): if it is not in "
+    "the numbered context, do not answer it and never attach a citation to it. "
+    "Requests to perform a task — write a poem, solve math, produce code — are "
+    "not questions about the context; give the same exact refusal.",
+)
+
+# Follow-up condensation (llm.condense_query): content-thin follow-ups like
+# "are you sure" embed to junk, so retrieval never re-fetches the chunk the
+# answer needs. When a query this short arrives mid-conversation, the chat
+# model rewrites it into a standalone question first — retrieval-side only,
+# the packed prompt still carries the user's literal words.
+CONDENSER_MODEL = os.getenv("CONDENSER_MODEL", MODEL)  # same model by default: already resident, no VRAM swap
+CONDENSE_MAX_WORDS = _int("CONDENSE_MAX_WORDS", 6)  # ponytail: word count as the content-thin test; a vocab check if it misfires
+CONDENSE_PROMPT = os.getenv(
+    "CONDENSE_PROMPT",
+    "Rewrite the user's last message as one standalone question, using the "
+    "conversation for context. Keep every specific detail. Reply with ONLY "
+    "the rewritten question.",
 )
 
 NUM_CTX = _int("NUM_CTX", 6144)  # hard ceiling: "6K" = 6 × 1024, passed to Ollama's num_ctx

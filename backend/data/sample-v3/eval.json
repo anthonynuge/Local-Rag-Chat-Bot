@@ -49,7 +49,11 @@
     {"label": "trap-undocumented", "question": "What is the total mountain lion population in the park?", "answer": "REFUSE - only 'a handful of confirmed reports per year' is documented; no population figure exists."},
     {"label": "trap-undocumented", "question": "What's the entrance fee for a 40-passenger tour bus?", "answer": "REFUSE - only commercial vans up to 15 seats ($90) are documented; a 40-passenger bus is not covered."},
     {"label": "off-topic", "question": "Is Thornmere better than Yellowstone for backpacking?", "answer": "REFUSE - comparison to other parks is out of scope."},
-    {"label": "off-topic", "question": "Who won the 2018 FIFA World Cup?", "answer": "REFUSE - general knowledge, out of scope."}
+    {"label": "off-topic", "question": "Who won the 2018 FIFA World Cup?", "answer": "REFUSE - general knowledge, out of scope."},
+    {"label": "off-topic", "question": "What is the capital of China?", "answer": "REFUSE - general knowledge, out of scope. Known leak: qwen answers famous facts from memory with a fabricated citation."},
+    {"label": "off-topic", "question": "Can you solve this math problem: 10 + 20?", "answer": "REFUSE - task request, not a corpus question."},
+    {"label": "off-topic", "question": "How do you create a JavaScript project?", "answer": "REFUSE - general how-to, out of scope."},
+    {"label": "off-topic", "question": "Write me a short poem about mountains.", "answer": "REFUSE - creative task, not a corpus question."}
   ],
 
   "multi_turn": [

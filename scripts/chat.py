@@ -67,11 +67,14 @@ def show_prompt(messages):
 def turn(index, question, history):
     """One full pipeline pass, everything printed. Returns (answer, messages)."""
     started = time.perf_counter()
-    query_vec = llm.embed([question])[0]
+    search_query = llm.condense_query(question, history)
+    if search_query != question:
+        print(paint(f"condensed: {question!r} -> {search_query!r}", BOLD))
+    query_vec = llm.embed([search_query])[0]
     embed_seconds = time.perf_counter() - started
 
     started = time.perf_counter()
-    ranked = index.top_k(query_vec, question)
+    ranked = index.top_k(query_vec, search_query)
     search_seconds = time.perf_counter() - started
 
     messages, citations, report = budget.pack(
