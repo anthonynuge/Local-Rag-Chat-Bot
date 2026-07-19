@@ -8,6 +8,28 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-18 — Control run: 3B on paragraph chunking + fair scoring
+
+Re-ran the default llama3.2:3b on the fixed chunks and either-or scoring.
+(Timings in this run are CPU-contaminated — the model was resident with
+num_gpu=0 from the floor check; rates are placement-independent and stand.)
+
+| same chunks, fair scoring | 3B | 7B |
+|---|---|---|
+| citation-rate | 30/35 (86%) | 32/35 (91%) |
+| answer-correct | 36/47 (77%) | 37/47 (79%) |
+| flat-wrong answers | 6 (+1 self-contradiction) | 1 |
+| trick handled | 1/6 | 3/6 |
+| refusal format | 7/8 | 0/8 (cites while refusing) |
+| multi-turn sequences | 3/4 | 1/4 |
+
+**Chunking was the dominant lever:** it moved 3B from 24->30 citations and
+72->77% correct; the headline model gap shrank from 9 points to 1. The real
+model difference is failure TYPE: 3B produces confident misinformation
+(helicopter rules reversed, a self-contradictory shuttle answer); 7B
+produces omissions. Recommendation unchanged — 7B default, 3B documented as
+the CPU-first option — but the margin is honest now, not lopsided.
+
 ## 2026-07-18 — CPU-only floor check: 3B vs 7B (NUM_GPU=0, ~1.8K-token prompt)
 
 | | llama3.2:3b | qwen2.5:7b |
