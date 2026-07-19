@@ -8,6 +8,31 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-18 — Hybrid retrieval: BM25 + cosine, reciprocal-rank fusion. KEPT
+
+**Change:** `store.top_k(query_vec, query_text)` fuses the cosine ranking
+with a BM25 ranking via RRF (RRF_K=60); BM25 votes only for chunks it
+matched, ties fall back to cosine order. Stats built from chunk text at
+load — ingest untouched, fully deterministic, microseconds per query.
+Motivation: the remaining retrieval misses were rare-exact-token queries
+("fall rut" rank 5, "Shoulder Camp" rank 7) — embeddings blur short queries
+whose one distinctive token appears in exactly one file.
+
+**Offline sweep (deterministic, no LLM):** hit@1 38->39, hit@4 45->46;
+fall rut rank 5->1, Shoulder Camp 7->3. One casualty: the long Sable
+overnight cross-source query fell 3->12 — BM25's many medium-rare tokens
+("Sable", "Ridge", "trail") flood the ranking with trail-guide chunks,
+pushing out the wildlife-safety chunk the pair needs.
+
+**End-to-end (qwen2.5:7b):** citation 32/35 -> 33/35 (94%, day high),
+multi-turn 1/4 -> 4/4 (first full pass), factual 24/24, trick 6/6.
+Answer-correct 37/47 -> 34/47: -1 systematic (Sable overnight, the
+predicted casualty), -2 the usual chunk-mix churn. Systematic ledger
++2/-1 -> kept per the pre-registered decision rule.
+
+**Follow-up queued (behind eval-set growth):** rare-token gating so long
+queries don't dilute BM25's vote; would recover the Sable overnight break.
+
 ## 2026-07-18 — Control run: 3B on paragraph chunking + fair scoring
 
 Re-ran the default llama3.2:3b on the fixed chunks and either-or scoring.

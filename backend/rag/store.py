@@ -1,15 +1,24 @@
-"""Persist/load the index and cosine top_k.
+"""Persist/load the index and hybrid top_k (cosine + BM25, rank-fused).
 
 storage/index.npz holds the L2-normalized vector matrix; storage/chunks.jsonl
-holds chunk dicts, row-aligned to the matrix. Brute-force cosine over a
-handful of files is instant; no vector DB until the corpus is 100x bigger.
+holds chunk dicts, row-aligned to the matrix. BM25 statistics are rebuilt
+from the chunk texts at load time — deterministic, so nothing extra is
+persisted. Brute-force over a handful of files is instant; no vector DB
+until the corpus is 100x bigger.
 """
 import json
+import math
+import re
 from pathlib import Path
 
 import numpy as np
 
 from rag import config
+
+
+def _tokenize(text):
+    # \w+ = runs of letters/digits; lowercased so query and chunk tokens match
+    return re.findall(r"\w+", text.lower())
 
 
 class Store:
@@ -20,15 +29,82 @@ class Store:
         self.vectors = vectors  # (n, dim) float32, L2-normalized
         self.chunks = chunks    # list[dict], row-aligned
 
-    def top_k(self, query_vec, k=None):
-        """Best-matching chunks for a query vector, best first.
+        # BM25 statistics, built once from the chunk texts.
+        self._term_counts = []  # per chunk: {token: occurrences}
+        for chunk in chunks:
+            counts = {}
+            for token in _tokenize(chunk["text"]):
+                counts[token] = counts.get(token, 0) + 1
+            self._term_counts.append(counts)
+        self._chunk_lens = [sum(counts.values()) for counts in self._term_counts]
+        if chunks:
+            self._avg_len = sum(self._chunk_lens) / len(chunks)
+        else:
+            self._avg_len = 0.0
+        chunks_with_term = {}  # token -> number of chunks containing it
+        for counts in self._term_counts:
+            for token in counts:
+                chunks_with_term[token] = chunks_with_term.get(token, 0) + 1
+        self._idf = {}
+        for token, chunk_count in chunks_with_term.items():
+            self._idf[token] = math.log(
+                (len(chunks) - chunk_count + 0.5) / (chunk_count + 0.5) + 1.0
+            )
 
-        query_vec is normalized (llm.embed) -> dot product IS cosine similarity.
+    def _bm25_scores(self, query_text):
+        """One BM25 score per chunk row for the query's tokens."""
+        scores = np.zeros(len(self.chunks), dtype=np.float32)
+        for token in _tokenize(query_text):
+            idf = self._idf.get(token)
+            if idf is None:
+                continue  # token appears in no chunk
+            for row, counts in enumerate(self._term_counts):
+                occurrences = counts.get(token, 0)
+                if occurrences == 0:
+                    continue
+                length_norm = 1 - config.BM25_B + config.BM25_B * (
+                    self._chunk_lens[row] / self._avg_len
+                )
+                scores[row] += idf * (occurrences * (config.BM25_K1 + 1)) / (
+                    occurrences + config.BM25_K1 * length_norm
+                )
+        return scores
+
+    def top_k(self, query_vec, query_text=None, k=None):
+        """Best-matching chunks, best first.
+
+        query_vec is normalized (llm.embed) -> dot product IS cosine
+        similarity. With query_text, the cosine ranking is fused with a BM25
+        ranking by reciprocal rank (score = sum of 1/(RRF_K + rank)); BM25
+        only votes for chunks it actually matched, so a query with no rare
+        tokens degrades gracefully to the cosine order. Without query_text,
+        pure cosine (kept for callers that have no text, and for tests).
+        The reported "score" stays the cosine similarity either way — it is
+        the observable the logs and REPL have always shown.
         """
         if k is None:
             k = config.TOP_K
         sims = self.vectors @ query_vec      # one cosine score per chunk row
         best_first = np.argsort(sims)[::-1]  # argsort is ascending; reverse it
+
+        if query_text is not None:
+            fused = np.zeros(len(self.chunks), dtype=np.float32)
+            cosine_position = {}
+            for position, row in enumerate(best_first):
+                fused[row] += 1.0 / (config.RRF_K + position + 1)
+                cosine_position[row] = position
+            bm25 = self._bm25_scores(query_text)
+            bm25_order = np.argsort(bm25)[::-1]
+            for position, row in enumerate(bm25_order):
+                if bm25[row] <= 0.0:
+                    break  # rows below matched nothing; they get no BM25 vote
+                fused[row] += 1.0 / (config.RRF_K + position + 1)
+            # equal fusion scores fall back to the cosine order, so a query
+            # BM25 has no opinion about cannot reshuffle the semantic ranking
+            best_first = sorted(
+                range(len(self.chunks)),
+                key=lambda row: (-fused[row], cosine_position[row]),
+            )
 
         results = []
         for row in best_first[:k]:

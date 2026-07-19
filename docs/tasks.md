@@ -116,7 +116,10 @@ Fixes:
       trout retrieval miss fixed (see `evals/EXPERIMENTS.md`). TOP_K=4
       follow-up tested and rejected — churn exceeds signal at 47 questions;
       grow the eval set before more retrieval tuning
-- [-] Hybrid BM25 + vector → [architecture.md#future-directions-out-of-scope-with-triggers](architecture.md) — defer until the above are measured
+- [x] Hybrid BM25 + vector (RRF in `store.top_k`) — trigger fired: remaining
+      misses were rare-exact-token queries. Citations 91%→94%, multi-turn
+      4/4; one long-query regression (Sable overnight), rare-token-gating
+      follow-up queued behind eval-set growth. See `evals/EXPERIMENTS.md`
 
 Known issues:
 - [ ] Garbled grounding: cited correctly but the answer is self-contradictory. E.g. _"off-leash only on the Mirrorbend Lakeshore Path, which is a leash-only trail except for dogs [4]"_ — model mangles a conditional policy

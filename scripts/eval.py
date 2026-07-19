@@ -161,7 +161,7 @@ def retrieval_hit(index, question, expected_sources):
     embed_seconds = time.perf_counter() - started
 
     started = time.perf_counter()
-    chunks = index.top_k(query_vec)
+    chunks = index.top_k(query_vec, question)
     search_seconds = time.perf_counter() - started
 
     sources = set()

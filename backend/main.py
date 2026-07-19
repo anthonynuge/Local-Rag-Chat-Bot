@@ -162,7 +162,7 @@ def chat(req: ChatRequest) -> StreamingResponse:
         raise HTTPException(400, str(e)) from e
 
     query_vec = llm.embed([question])[0]  # embed() is batch-shaped; one question -> row 0
-    ranked = get_index().top_k(query_vec)
+    ranked = get_index().top_k(query_vec, question)
     messages, citations, report = budget.pack(config.SYSTEM_PROMPT, question, ranked, req.history)
 
     # Retrieval trace: what came back, how confident, and whether pack() kept it.

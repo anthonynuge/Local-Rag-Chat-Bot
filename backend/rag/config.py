@@ -43,6 +43,13 @@ SAFETY_FRAC = float(os.getenv("SAFETY_FRAC", 0.10))  # input held back for token
 CONTEXT_BUDGET = _int("CONTEXT_BUDGET", 3000)  # max tokens of retrieved chunks in the prompt
 TOP_K = _int("TOP_K", 6)  # chunks retrieved per query (6 × 400 fits CONTEXT_BUDGET)
 
+# Hybrid retrieval (store.top_k): cosine and BM25 rankings merged by
+# reciprocal-rank fusion. Cosine carries meaning; BM25 carries rare exact
+# tokens ("rut", "Sable 14") that short queries lean on and embeddings blur.
+RRF_K = _int("RRF_K", 60)  # fusion constant; 60 is the standard from the RRF paper
+BM25_K1 = float(os.getenv("BM25_K1", 1.5))  # term-frequency saturation
+BM25_B = float(os.getenv("BM25_B", 0.75))  # document-length normalization
+
 CHUNK_TOKENS = _int("CHUNK_TOKENS", 400)  # target chunk size at ingest
 CHUNK_OVERLAP = _int("CHUNK_OVERLAP", 50)  # overlap between adjacent chunks
 

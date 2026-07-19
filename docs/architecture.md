@@ -219,10 +219,10 @@ off at demo scale:
   top-k returns topically-close-but-wrong chunks. At a handful of files, cosine
   rank is already near-perfect. _(trigger now met — see tasks.md Phase 10.5;
   deferred pending model-swap + chunking results)_
-- **Hybrid retrieval (BM25 + vectors).** Add when queries lean on exact tokens
-  embeddings blur — IDs, error codes, function names. Pure semantic search is
-  fine for prose Q&A. _(trigger now met — see tasks.md Phase 10.5; deferred
-  pending model-swap + chunking results)_
+- **Hybrid retrieval (BM25 + vectors).** _Implemented 2026-07-18_ — the
+  trigger fired (rare-exact-token queries like "fall rut" were the remaining
+  retrieval misses). RRF fusion in `store.top_k`; BM25 stats rebuilt from
+  chunk text at load, ingest untouched. See `evals/EXPERIMENTS.md`.
 - **Vector DB (e.g. sqlite-vec, LanceDB).** At ~100x corpus size, when
   brute-force cosine or index load time becomes measurable.
 - **Real model tokenizer.** Swap tiktoken for the llama tokenizer if measured

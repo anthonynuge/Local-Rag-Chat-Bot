@@ -32,3 +32,33 @@ def test_top_k_returns_best_first(tmp_path):
     assert s.top_k(_unit([0.0, 1]), k=1)[0]["source"] == "f2.md"
     # the stored chunks were not mutated by scoring
     assert "score" not in s.chunks[0]
+
+
+def test_hybrid_rare_token_beats_cosine():
+    # cosine alone ranks the wrong chunk first (vectors say so), but the
+    # query's rare token "rut" appears only in the second chunk — the BM25
+    # vote must pull it to the top of the fused ranking
+    vecs = np.stack([_unit([1, 0.0]), _unit([0.6, 0.8])])
+    chunks = [
+        {"source": "generic.md", "heading": "", "text": "general park visiting advice", "idx": 0},
+        {"source": "moose.txt", "heading": "", "text": "keep far away during the fall rut", "idx": 0},
+    ]
+    s = store.Store(vecs, chunks)
+    query = _unit([1, 0.0])  # cosine favors generic.md
+
+    assert s.top_k(query, k=1)[0]["source"] == "generic.md"  # cosine-only order
+    hybrid = s.top_k(query, "what about during the fall rut?", k=2)
+    assert hybrid[0]["source"] == "moose.txt"
+
+
+def test_hybrid_without_rare_tokens_keeps_cosine_order():
+    # a query whose tokens appear in every chunk (or none) gives BM25 nothing
+    # decisive — the cosine order must survive fusion
+    vecs = np.stack([_unit([1, 0.0]), _unit([0.0, 1])])
+    chunks = [
+        {"source": "a.md", "heading": "", "text": "park trails and park views", "idx": 0},
+        {"source": "b.md", "heading": "", "text": "park fees and park passes", "idx": 0},
+    ]
+    s = store.Store(vecs, chunks)
+    hybrid = s.top_k(_unit([1, 0.0]), "tell me about the park", k=2)
+    assert hybrid[0]["source"] == "a.md"

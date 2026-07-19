@@ -71,7 +71,7 @@ def turn(index, question, history):
     embed_seconds = time.perf_counter() - started
 
     started = time.perf_counter()
-    ranked = index.top_k(query_vec)
+    ranked = index.top_k(query_vec, question)
     search_seconds = time.perf_counter() - started
 
     messages, citations, report = budget.pack(
