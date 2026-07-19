@@ -8,6 +8,21 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-18 — CPU-only floor check: 3B vs 7B (NUM_GPU=0, ~1.8K-token prompt)
+
+| | llama3.2:3b | qwen2.5:7b |
+|---|---|---|
+| TTFT warm | ~5.4s | ~11.4s |
+| TTFT cold (incl. load) | 13.6s | 25.4s |
+| generation | 47 tok/s | 24 tok/s |
+| RAM | ~2.5 GB | ~5.5 GB |
+
+Quality is placement-independent; only speed changes. 7B on CPU = usable but
+patient: streaming runs at 4-5x reading speed once it starts, the cost is
+~11s of silence per question (prompt processing, scales with prompt size).
+Feeds the adoption decision: 7B default for quality, 3B stays documented as
+the CPU-first option via MODEL env — the llm-seam swap the spec designed for.
+
 ## 2026-07-18 — TOP_K=4 tested, kept 6; eval gains either-or source groups
 
 **Rank sweep first (no LLM):** for all 47 questions, the rank at which every
