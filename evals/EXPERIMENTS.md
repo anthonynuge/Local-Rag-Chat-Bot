@@ -8,6 +8,28 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-18 — Prompt v2: refusal exact-reply + premise-correction ladder. KEPT
+
+**Change (config.py defaults):** SYSTEM_PROMPT gains a premise-correction
+line; CITE_REMINDER became an ordered decision ladder — (1) premise
+contradicted -> correct it and cite, (2) answer present -> answer and cite,
+(3) neither -> reply with exactly "I don't have that information.", no
+markers, nothing else. v1 (two independent lines) failed: the strict
+refusal rule sat nearest the question and beat the distant premise rule —
+trick questions refused instead of correcting (6/6 -> 2/6 cited). Ordering
+the rules in ONE place fixed the collision.
+
+**Measured (qwen2.5:7b, hybrid retrieval):** answer-correct 34/47 -> 39/47
+(83%, day best); partials 11 -> 3; cross-source judged 5/5; refusal format
+0/8 -> 6/8; failing checks 11 -> 6. Also surfaced one more either-or
+ground-truth fix (Sable Spring is in the FAQ too).
+
+**Still open:** trick questions cite the correcting file (6/6) but
+soft-pedal the correction (judged 1/6) — the model points at the truth
+without committing to it. Two refusal stragglers (one explains after the
+exact phrase, one trap answered). One genuine mis-attribution (60 m cited
+to permits; the fact lives only in wildlife-safety).
+
 ## 2026-07-18 — Hybrid retrieval: BM25 + cosine, reciprocal-rank fusion. KEPT
 
 **Change:** `store.top_k(query_vec, query_text)` fuses the cosine ranking

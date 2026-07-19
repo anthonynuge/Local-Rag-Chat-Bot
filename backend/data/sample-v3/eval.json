@@ -10,7 +10,7 @@
     {"label": "factual", "question": "How long is the Sable Ridge Trail and how much elevation does it gain?", "expected_source": "trail-guide.md", "answer": "11.4 km one-way, 780 m of gain."},
     {"label": "factual", "question": "When is the Thornmere Summit Route typically snow-free?", "expected_source": "trail-guide.md", "answer": "Mid-July to late September."},
     {"label": "factual", "question": "What difficulty rating does the Thornmere Summit Route carry?", "expected_source": "trail-guide.md", "answer": "Scramble."},
-    {"label": "factual", "question": "Where is the last reliable water on the Sable Ridge Trail?", "expected_source": "trail-guide.md", "answer": "Sable Spring, at km 4.8 (marker post Sable 5)."},
+    {"label": "factual", "question": "Where is the last reliable water on the Sable Ridge Trail?", "expected_sources": [["trail-guide.md", "visitor-faq.txt"]], "answer": "Sable Spring, at km 4.8 (marker post Sable 5)."},
     {"label": "factual", "question": "How much is a vehicle day pass?", "expected_source": "permits-and-fees.md", "answer": "$22, covers everyone in the vehicle."},
     {"label": "factual", "question": "What is the maximum group size on a single backcountry permit?", "expected_source": "permits-and-fees.md", "answer": "8 people."},
     {"label": "factual", "question": "How much does it cost to rent a bear canister?", "expected_source": "permits-and-fees.md", "answer": "$5 per night with a $60 refundable deposit."},

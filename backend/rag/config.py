@@ -24,7 +24,8 @@ SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
     "Answer ONLY using the numbered context below. Cite sources inline as [1], [2]. "
     "If the answer is not in the context, say you don't have that information — "
-    "do not use outside knowledge.",
+    "do not use outside knowledge. If the question assumes something the context "
+    "contradicts, say so and correct it with a citation instead of answering as asked.",
 )
 # Rides with the current question (budget.pack). The system prompt sits at the
 # top of an ever-growing prompt; a 3B model drops the cite format without a
@@ -32,9 +33,12 @@ SYSTEM_PROMPT = os.getenv(
 CITE_REMINDER = os.getenv(
     "CITE_REMINDER",
     "Every statement taken from the context MUST end with its inline citation "
-    "marker, for example: \"The limit is three days [2].\" If the context does "
-    "not contain the answer, say you don't have that information and cite "
-    "nothing.",
+    "marker, for example: \"The limit is three days [2].\" If the question "
+    "assumes something the context contradicts, correct the assumption and "
+    "cite the correcting source — that counts as an answer, not a refusal. "
+    "Only when the context offers neither the answer nor a correction, reply "
+    "with exactly: \"I don't have that information.\" — no citation markers, "
+    "nothing else.",
 )
 
 NUM_CTX = _int("NUM_CTX", 6144)  # hard ceiling: "6K" = 6 × 1024, passed to Ollama's num_ctx
