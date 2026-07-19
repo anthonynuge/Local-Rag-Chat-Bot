@@ -24,7 +24,7 @@ def n_tokens(text):
 class Chunk:
     """One retrievable piece of a source file — the unit the index stores and ranks."""
     source: str   # filename
-    heading: str  # nearest markdown heading, "" for .txt / preamble
+    heading: str  # full heading breadcrumb ("Title > Section > Sub"), "" for .txt / preamble
     text: str
     idx: int      # position within the source file
 
@@ -47,23 +47,33 @@ def _window(text):
 
 
 def _sections(text):
-    """Split markdown into (heading, body) pairs; body keeps its heading line
-    so embeddings see it. Preamble before the first heading has heading ''."""
-    # Matches a whole heading line: 1-6 '#' then whitespace then the title.
-    # Because the pattern is in (parens), re.split KEEPS the heading lines,
-    # so parts alternates: [preamble, heading1, body1, heading2, body2, ...]
-    parts = re.split(r"(?m)^(#{1,6}\s+.*)$", text)
-
+    """Split markdown into (heading_path, body) pairs. heading_path is the
+    full breadcrumb of open headings ("Title > Section > Sub"), maintained
+    as a stack: a new level-N heading pops everything at level N or deeper.
+    Every window of a section inherits the same path, so a chunk from deep
+    inside a long section still knows where it lives. Body keeps its heading
+    line. Preamble before the first heading has path ''."""
     sections = []
-    preamble = parts[0]
-    if preamble.strip():
-        sections.append(("", preamble))
+    open_headings = []   # (level, title) of every heading enclosing the current line
+    current_lines = []   # lines of the section being accumulated
 
-    heading_lines = parts[1::2]  # every 2nd item starting at 1: the headings
-    bodies = parts[2::2]         # every 2nd item starting at 2: their bodies
-    for heading_line, body in zip(heading_lines, bodies):
-        heading = heading_line.lstrip("#").strip()
-        sections.append((heading, heading_line + body))
+    def flush():
+        body = "\n".join(current_lines)
+        if body.strip():
+            path = " > ".join(title for _level, title in open_headings)
+            sections.append((path, body))
+        current_lines.clear()
+
+    for line in text.splitlines():
+        match = re.match(r"^(#{1,6})\s+(.*)$", line)
+        if match:
+            flush()  # previous section ends where a new heading starts
+            level = len(match.group(1))
+            while open_headings and open_headings[-1][0] >= level:
+                open_headings.pop()
+            open_headings.append((level, match.group(2).strip()))
+        current_lines.append(line)
+    flush()
     return sections
 
 

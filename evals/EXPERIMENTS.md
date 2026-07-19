@@ -8,6 +8,30 @@ rates live in `<data_dir>/baseline.json`.
 
 ---
 
+## 2026-07-19 — Generalization check (sample-1) + heading-path chunking. KEPT
+
+**Generalization first:** the full current stack (hybrid retrieval, prompt
+v2, paragraph chunking) run on the sample-1 corpus (company docs — PTO,
+runbook, security policy; unseen since the old stack): retrieval 20/21 ->
+21/21, citation 11/12 -> 12/12, multi-turn 3/3. The stack is not overfit
+to sample-v3 — it *improved* a corpus it was never tuned on. One refusal
+regressed (3B half-answers a competitors question); the prompt ladder was
+only ever tuned on qwen.
+
+**Heading-path chunking:** .md `heading` is now the full breadcrumb
+("Title > Section > Sub") via a heading stack — every window of a long
+section inherits its path, and pack()/citations show it with zero code
+changes. Ingest embeds each chunk with a `file-stem — path` prefix
+(embed-side only; stored text stays clean for BM25 + prompt), which also
+gives heading-less .txt paragraphs their file as context.
+
+**Measured:** sample-1 identical (already at ceiling, change harmless);
+sample-v3 misses 4 -> 3 — the "60 meters" wrong-file citation fixed, one
+churn-band wobble traded in, the two known stubborn failures unchanged
+(Sable overnight BM25 flooding; multi-turn fine attribution). Kept:
+structural fix for windowed-section anonymity, load-bearing for any
+deep-hierarchy corpus (handbooks), cost zero.
+
 ## 2026-07-19 — difflib query typo-repair: built, measured, REVERTED
 
 **Idea:** replace query words absent from the corpus vocabulary with their

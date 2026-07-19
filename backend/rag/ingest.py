@@ -21,9 +21,20 @@ def main(corpus_dir=None):
     for file in files:
         chunks.extend(chunk_file(file))
 
+    # Embed with a context prefix (file stem + heading breadcrumb) so a
+    # window from deep inside a long section — or a heading-less .txt
+    # paragraph — still embeds knowing where it lives. Embed-side only:
+    # the stored text stays clean for BM25 and the prompt.
+    embed_inputs = []
+    for chunk in chunks:
+        file_stem = chunk.source.rsplit(".", 1)[0]
+        if chunk.heading:
+            embed_inputs.append(f"{file_stem} — {chunk.heading}\n{chunk.text}")
+        else:
+            embed_inputs.append(f"{file_stem}\n{chunk.text}")
     # One embed call for the whole corpus — at this size it's one small batch;
     # split into batches when a corpus actually needs it.
-    vectors = llm.embed([chunk.text for chunk in chunks])
+    vectors = llm.embed(embed_inputs)
     store.save(vectors, [asdict(chunk) for chunk in chunks])
 
     total_tokens = sum(n_tokens(chunk.text) for chunk in chunks)

@@ -58,5 +58,24 @@ def test_md_sections_kept_whole(tmp_path):
     f = tmp_path / "doc.md"
     f.write_text("# Title\nintro\n## Section A\nbody a\n## Section B\nbody b\n", encoding="utf-8")
     chunks = chunk_file(f)
-    assert [c.heading for c in chunks] == ["Title", "Section A", "Section B"]
+    # heading is the full breadcrumb path, not just the nearest heading
+    assert [c.heading for c in chunks] == ["Title", "Title > Section A", "Title > Section B"]
     assert "body a" in chunks[1].text and "## Section A" in chunks[1].text
+
+
+def test_md_heading_stack_pops_correctly(tmp_path):
+    f = tmp_path / "doc.md"
+    f.write_text(
+        "# Handbook\n"
+        "## Benefits\nintro\n"
+        "### Health Insurance\ndetails\n"
+        "## Payroll\nother\n",   # h2 must pop the h3 AND the previous h2
+        encoding="utf-8",
+    )
+    chunks = chunk_file(f)
+    assert [c.heading for c in chunks] == [
+        "Handbook",
+        "Handbook > Benefits",
+        "Handbook > Benefits > Health Insurance",
+        "Handbook > Payroll",
+    ]
