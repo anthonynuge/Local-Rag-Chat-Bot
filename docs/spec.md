@@ -34,9 +34,9 @@ ingested documents, with citations, and refuses when the answer isn't present.
   have that information," not a hallucination.
 - **G3 — Local, swappable inference on commodity hardware.** Ollama today,
   behind a single interface, so the model runtime can be replaced (e.g. an NPU)
-  without touching retrieval or budgeting. A 3B quantized model answers the
-  CPU/GPU question: CPU-only is usable, and Ollama offloads to a GPU
-  automatically when one is present — see
+  without touching retrieval or budgeting. Default is qwen2.5:7b;
+  `MODEL=llama3.2:3b` is the CPU-first fallback. CPU-only is usable, and
+  Ollama offloads to a GPU automatically when one is present — see
   [architecture.md#hardware](architecture.md#hardware).
 - **G4 — Lightweight streaming UI.** One chat input, streamed response,
   rendered citations. Ingestion is a separate command run before startup, not an

@@ -10,7 +10,7 @@ def _int(name: str, default: int) -> int:
     return int(os.getenv(name, default))
 
 
-MODEL = os.getenv("MODEL", "llama3.2:3b")  # chat model — 3B quantized, usable on CPU
+MODEL = os.getenv("MODEL", "qwen2.5:7b")  # chat model; MODEL=llama3.2:3b for the CPU-first fallback
 EMBED_MODEL = os.getenv("EMBED_MODEL", "nomic-embed-text")  # local embedding model
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0.0))  # 0 = deterministic — grounded answers, repeatable smoke test
