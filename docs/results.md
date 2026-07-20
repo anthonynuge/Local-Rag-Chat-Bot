@@ -164,3 +164,17 @@ Known failure modes this dataset exposed (all pipeline-side, none corpus-side):
 cd backend
 uv run python ../scripts/eval.py ./data/clef-sample
 ```
+
+## Planned changes
+
+Chunks are too small (median 76 tokens, 80 of 217 under 50).
+
+1. Merge neighboring chunks at ingest up to ~250 tokens (`chunk.py`).
+   Tiny chunks rank poorly and one file ends up as 13 pieces.
+2. Max 2 chunks per file at retrieval (`store.py`). One file took 4 of 6
+   slots; the second file the question needed never got in.
+
+Rejected: smaller chunks (they're already too small), reranker (ranking
+isn't the problem, crowding is).
+
+One change at a time, re-run both evals, compare to baselines.
