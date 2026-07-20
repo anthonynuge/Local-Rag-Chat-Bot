@@ -121,3 +121,46 @@ cd backend
 uv run python ../scripts/eval.py ./data/thornmere   # rates + run JSON
 uv run python ../scripts/judge.py                    # grade newest run
 ```
+
+---
+
+# clef-sample baseline — 2026-07-20
+
+New realistic dataset: the public Clef employee handbook (49 files, 217
+chunks, nested folders, real human-written prose) plus generated IT-policy
+`.txt` files rewritten in-universe so the corpus doesn't contradict itself.
+25-question eval sheet. Unlike thornmere (synthetic, contamination-free),
+Clef is public on GitHub and likely in qwen's training data — the generated
+`.txt` facts are the uncontaminated signal. Thornmere stays the controlled
+benchmark; clef-sample is the stress test.
+
+Baseline locked from run `clef-sample-20260720-000115` (reproduced
+identically across three runs — failures are deterministic, not flaky):
+
+| Check      | Rate  |               |
+|------------|-------|---------------|
+| retrieval  | 18/20 | 90%           |
+| citation   | 13/17 | 76% (factual 12/12, cross-source 1/3, trick 0/2) |
+| refusal    | 4/5   | 80%           |
+| multi-turn | 1/1   |               |
+
+Known failure modes this dataset exposed (all pipeline-side, none corpus-side):
+
+- **One file monopolizes retrieval slots** — both cross-source misses:
+  `Working Remotely.md` takes 4 of 6 slots and `vpn-access.txt` never
+  surfaces. Fix scoped: per-file cap in `store.top_k`.
+- **False-premise over-refusal** — both trick questions refuse with the
+  correcting chunk packed at rank 1 (score 0.80+). The refusal path in the
+  prompt beats the correct-the-premise path. Same class as thornmere's
+  trick soft-pedals, now fully tipped over.
+- **Task-refusal leak on in-corpus topics** — "write a poem about strong
+  passwords" gets answered with citations because the topic retrieves
+  well; the same probe on an off-corpus topic (mountains) refuses
+  correctly. New failure mode thornmere couldn't show.
+- `README.md` (the handbook's own index page) steals retrieval slots on
+  benefits questions; deleting it from the folder is free accuracy.
+
+```bash
+cd backend
+uv run python ../scripts/eval.py ./data/clef-sample
+```
