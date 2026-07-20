@@ -45,7 +45,9 @@ def pack(system, question, ranked, history):
             break  # rank order is the contract: no lower-ranked chunk jumps a dropped one
         blocks.append(block)
         context_tokens += block_tokens
-        citations.append({"id": citation_id, "source": chunk["source"], "heading": chunk["heading"]})
+        citations.append(
+            {"id": citation_id, "source": chunk["source"], "heading": chunk["heading"], "text": chunk["text"]}
+        )
 
     # --- History: newest turn pairs into what remains; oldest dropped whole.
     history_cap = config.INPUT_BUDGET - system_tokens - question_tokens - context_tokens

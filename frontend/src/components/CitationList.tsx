@@ -7,15 +7,18 @@ function CitationList({ citations }: { citations: Citation[] }) {
   }
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 flex flex-col gap-2">
       {citations.map((citation) => (
-        <span
+        <details
           key={citation.id}
-          className="rounded-full border border-border bg-muted px-3 py-1 text-[13px] font-medium text-muted-foreground"
+          className="rounded-lg border border-border bg-muted text-[13px] text-muted-foreground"
         >
-          [{citation.id}] {citation.source}
-          {citation.heading !== "" && ` — ${citation.heading}`}
-        </span>
+          <summary className="cursor-pointer px-3 py-1 font-medium">
+            [{citation.id}] {citation.source}
+            {citation.heading !== "" && ` — ${citation.heading}`}
+          </summary>
+          <pre className="whitespace-pre-wrap px-3 pb-2 font-sans text-[13px]">{citation.text}</pre>
+        </details>
       ))}
     </div>
   )

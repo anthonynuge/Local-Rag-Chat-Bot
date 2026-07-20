@@ -72,7 +72,7 @@ dropped server-side to fit the budget — see [architecture.md](architecture.md)
 | Event               | When                             | `data` payload                                                                              |
 | ------------------- | -------------------------------- | ------------------------------------------------------------------------------------------- |
 | _(default)_ `token` | repeated, as the model generates | `{"delta": "text piece"}`                                                                   |
-| `citations`         | once, after generation           | `{"citations": [ {"id": 1, "source": "pto-policy.md", "heading": "Accrual"} ] }`            |
+| `citations`         | once, after generation           | `{"citations": [ {"id": 1, "source": "pto-policy.md", "heading": "Accrual", "text": "chunk text…"} ] }` |
 | `done`              | once, last                       | `{"prompt_eval_count": 512, "eval_count": 180, "budget": { ...per-slice token counts... }}` |
 | `error`             | on failure (replaces `done`)     | `{"message": "human-readable reason"}`                                                       |
 
@@ -86,7 +86,7 @@ event: token
 data: {"delta": " employees accrue"}
 
 event: citations
-data: {"citations": [{"id": 1, "source": "pto-policy.md", "heading": "Accrual"}]}
+data: {"citations": [{"id": 1, "source": "pto-policy.md", "heading": "Accrual", "text": "Full-time employees accrue…"}]}
 
 event: done
 data: {"prompt_eval_count": 512, "eval_count": 180, "eval_duration": 950000000, "budget": {"system": 240, "context": 2100, "history": 0, "question": 12}}

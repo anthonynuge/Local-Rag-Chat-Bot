@@ -15,6 +15,7 @@ export interface Citation {
   id: number
   source: string
   heading: string
+  text: string
 }
 
 export interface BudgetReport {
