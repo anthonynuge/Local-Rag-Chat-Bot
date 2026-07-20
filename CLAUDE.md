@@ -32,5 +32,6 @@ uv run python ../scripts/chat.py [data_dir] # interactive debug REPL (shows chun
 ```
 
 `scripts/dev.ps1` / `scripts/dev.sh` (from repo root) start backend + frontend together.
+`scripts/demo.ps1` does the same with the backend in a visible pane/window (pipeline trace on screen for demos).
 
 Trunk-based: short branches off `main`, local squash-merge; `pytest tests` green before every merge.
