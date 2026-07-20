@@ -1,6 +1,6 @@
 {
-  "retrieval": [46, 47],
-  "citation": [24, 35],
-  "refusal": [8, 8],
-  "multi_turn": [2, 4]
+  "retrieval": [47, 47],
+  "citation": [31, 35],
+  "refusal": [12, 12],
+  "multi_turn": [1, 4]
 }

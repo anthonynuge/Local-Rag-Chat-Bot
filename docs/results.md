@@ -178,3 +178,9 @@ Rejected: smaller chunks (they're already too small), reranker (ranking
 isn't the problem, crowding is).
 
 One change at a time, re-run both evals, compare to baselines.
+
+Result (2026-07-20): clef 217 -> 130 chunks. Citation 13/17 -> 15/17,
+retrieval 18/20 -> 19/20. Thornmere improved too (citation 30 -> 31/35,
+refusal 10 -> 12/12 vs its latest run). No regressions; both baselines
+re-locked. Still red: equipment cross-source, one trick refusal, the
+password poem — the last two are prompt work.
