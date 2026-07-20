@@ -184,3 +184,23 @@ retrieval 18/20 -> 19/20. Thornmere improved too (citation 30 -> 31/35,
 refusal 10 -> 12/12 vs its latest run). No regressions; both baselines
 re-locked. Still red: equipment cross-source, one trick refusal, the
 password poem — the last two are prompt work.
+
+Tested mistral-nemo:12b (2026-07-20): worse. Failing checks clef 3 -> 6,
+thornmere 6 -> 8, 25% slower. Better at answering (thornmere multi-turn
+1/4 -> 4/4, factual 21 -> 23/24) but it makes things up: invented a phone
+number with a citation, gave the 15-seat van fee for the 40-passenger bus
+trap, answered a JavaScript question with a made-up park fact. Kept
+qwen2.5:7b.
+
+Same pipeline gave qwen 1/4 and NeMo 4/4 on thornmere multi-turn, so that
+red is qwen refusing too much, not retrieval or history.
+
+Prompt experiment (2026-07-20, reverted): rewrote CITE_REMINDER as a
+numbered decision ladder. Best version fixed the poem refusal and went
+5/5 refusals on clef, but qwen copies any literal example string from
+the prompt into answers — "The limit is three days" showed up as a
+multi-turn answer, and "like [2]" got stapled onto thornmere refusals
+(12 -> 10/12). Net failing checks across both sets: 11 -> 13. Reverted
+to the committed prompt. The poem leak stays a known model limit; next
+attempt should change the eval to catch it differently or wait for a
+model swap, not more rewording.
