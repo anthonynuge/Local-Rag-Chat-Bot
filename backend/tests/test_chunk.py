@@ -36,9 +36,10 @@ def test_long_text_windows_with_overlap(tmp_path):
         assert a.text[-20:] in b.text  # tail of one window appears in the next
 
 
-def test_txt_splits_on_paragraphs_keeping_them_whole(tmp_path):
+def test_txt_splits_on_paragraphs_keeping_them_whole(tmp_path, monkeypatch):
     # multi-line paragraphs (like an FAQ's Q/A pair) must not be separated;
     # the paragraph break is the only boundary a window may cut at
+    monkeypatch.setattr(config, "CHUNK_MERGE_TOKENS", 0)  # test the split, not the packing
     f = tmp_path / "notes.txt"
     f.write_text(
         "Q: How often does the shuttle run?\n"
@@ -54,7 +55,8 @@ def test_txt_splits_on_paragraphs_keeping_them_whole(tmp_path):
     assert "moose" in chunks[1].text
 
 
-def test_md_sections_kept_whole(tmp_path):
+def test_md_sections_kept_whole(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "CHUNK_MERGE_TOKENS", 0)  # test the split, not the packing
     f = tmp_path / "doc.md"
     f.write_text("# Title\nintro\n## Section A\nbody a\n## Section B\nbody b\n", encoding="utf-8")
     chunks = chunk_file(f)
@@ -63,7 +65,8 @@ def test_md_sections_kept_whole(tmp_path):
     assert "body a" in chunks[1].text and "## Section A" in chunks[1].text
 
 
-def test_md_heading_stack_pops_correctly(tmp_path):
+def test_md_heading_stack_pops_correctly(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "CHUNK_MERGE_TOKENS", 0)  # test the split, not the packing
     f = tmp_path / "doc.md"
     f.write_text(
         "# Handbook\n"
@@ -79,3 +82,45 @@ def test_md_heading_stack_pops_correctly(tmp_path):
         "Handbook > Benefits > Health Insurance",
         "Handbook > Payroll",
     ]
+
+
+def test_small_pieces_merge_into_one_chunk(tmp_path):
+    # two tiny sibling sections fit the merge target together -> one chunk,
+    # heading collapses to their shared parent
+    f = tmp_path / "doc.md"
+    f.write_text("# Title\n## A\nshort a\n## B\nshort b\n", encoding="utf-8")
+    chunks = chunk_file(f)
+    assert len(chunks) == 1
+    assert chunks[0].heading == "Title"
+    assert "short a" in chunks[0].text and "short b" in chunks[0].text
+
+
+def test_merge_stops_at_target_size(tmp_path):
+    # 20 paragraphs of ~40 tokens: merging must produce several chunks,
+    # none far over CHUNK_MERGE_TOKENS, with every paragraph kept whole
+    paragraphs = []
+    for i in range(20):
+        paragraphs.append(" ".join(f"word{i}x{j}" for j in range(20)))
+    f = tmp_path / "long.txt"
+    f.write_text("\n\n".join(paragraphs), encoding="utf-8")
+    chunks = chunk_file(f)
+    assert 1 < len(chunks) < 20  # merged, but not into a single oversized blob
+    for c in chunks:
+        assert n_tokens(c.text) <= config.CHUNK_MERGE_TOKENS + 10  # +joins slack
+    assert "".join(c.text for c in chunks).count("word") == 400  # nothing dropped
+
+
+def test_urls_and_images_stripped_but_labels_kept(tmp_path):
+    f = tmp_path / "noisy.md"
+    f.write_text(
+        "# Setup\n"
+        "![build badge](https://ci.example.com/badge.svg)\n"
+        "See the [install guide](https://example.com/install) first.\n"
+        "Docs: <https://example.com/docs> and https://example.com/raw here.\n"
+        "**Bold** stays.\n",
+        encoding="utf-8",
+    )
+    text = chunk_file(f)[0].text
+    assert "http" not in text
+    assert "build badge" in text and "install guide" in text  # readable text survives
+    assert "**Bold**" in text and "# Setup" in text  # markdown structure untouched

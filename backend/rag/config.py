@@ -74,6 +74,12 @@ BM25_B = float(os.getenv("BM25_B", 0.75))  # document-length normalization
 
 CHUNK_TOKENS = _int("CHUNK_TOKENS", 400)  # target chunk size at ingest
 CHUNK_OVERLAP = _int("CHUNK_OVERLAP", 50)  # overlap between adjacent chunks
+# Tiny sections/paragraphs merge with their neighbors up to this size —
+# a 20-token bullet block alone ranks poorly and wastes a retrieval slot.
+CHUNK_MERGE_TOKENS = _int("CHUNK_MERGE_TOKENS", 250)  # 0 = no merging
+# One file may hold at most this many of the TOP_K retrieval slots, so a
+# file split into many chunks can't crowd every other source out.
+TOP_K_PER_FILE = _int("TOP_K_PER_FILE", 2)  # 0 = no cap
 
 DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data" / "sample"))  # ingest source (CLI arg overrides)
 STORAGE_DIR = Path(os.getenv("STORAGE_DIR", BASE_DIR / "storage"))  # index.npz + chunks.jsonl

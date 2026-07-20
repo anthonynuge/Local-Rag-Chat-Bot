@@ -34,6 +34,28 @@ def test_top_k_returns_best_first(tmp_path):
     assert "score" not in s.chunks[0]
 
 
+def test_per_file_cap_lets_other_files_in():
+    # four chunks of big.md outscore everything; the cap (2 per file) must
+    # pass slots 3 and 4 on to the next-ranked files instead
+    vecs = np.stack([
+        _unit([1, 0.0]),      # big.md
+        _unit([1, 0.1]),      # big.md
+        _unit([1, 0.2]),      # big.md
+        _unit([1, 0.3]),      # big.md
+        _unit([0.5, 1]),      # other.md
+        _unit([0.0, 1]),      # third.md
+    ])
+    chunks = [
+        {"source": "big.md", "heading": "", "text": f"big {i}", "idx": i} for i in range(4)
+    ] + [
+        {"source": "other.md", "heading": "", "text": "other", "idx": 0},
+        {"source": "third.md", "heading": "", "text": "third", "idx": 0},
+    ]
+    s = store.Store(vecs, chunks)
+    hits = s.top_k(_unit([1, 0.0]), k=4)
+    assert [h["source"] for h in hits] == ["big.md", "big.md", "other.md", "third.md"]
+
+
 def test_hybrid_rare_token_beats_cosine():
     # cosine alone ranks the wrong chunk first (vectors say so), but the
     # query's rare token "rut" appears only in the second chunk — the BM25

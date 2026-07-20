@@ -13,13 +13,15 @@ from rag.chunk import chunk_file, n_tokens
 
 def main(corpus_dir=None):
     corpus = Path(corpus_dir or config.DATA_DIR)
-    files = sorted(p for p in corpus.iterdir() if p.suffix.lower() in (".md", ".txt"))
+    files = sorted(p for p in corpus.rglob("*") if p.suffix.lower() in (".md", ".txt"))
     if not files:
         sys.exit(f"no .md/.txt files in {corpus}")
 
     chunks = []
     for file in files:
-        chunks.extend(chunk_file(file))
+        # Corpus-relative path as the source name: unique across subfolders,
+        # and identical to the bare filename for a flat corpus.
+        chunks.extend(chunk_file(file, source=file.relative_to(corpus).as_posix()))
 
     # Embed with a context prefix (file stem + heading breadcrumb) so a
     # window from deep inside a long section — or a heading-less .txt

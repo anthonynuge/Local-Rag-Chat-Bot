@@ -29,6 +29,23 @@ class Chunk:
     idx: int      # position within the source file
 
 
+# Noise stripped before chunking: URLs and image syntax burn tokens and embed
+# poorly, but their human-readable text (alt text, link labels) is worth keeping.
+_IMAGE = re.compile(r"!\[([^\]]*)\]\([^)]*\)")  # ![alt](src) -> alt
+_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")    # [label](url) -> label
+_URL = re.compile(r"<https?://[^>\s]+>|https?://\S+")  # autolink or bare URL -> gone
+
+
+def _clean(text):
+    """Drop URL/image noise, keep the readable text. Markdown structure
+    (headings, bold, lists) stays: headings drive the splitter and the
+    rest is cheap tokens the model reads fine."""
+    text = _IMAGE.sub(r"\1", text)  # before _LINK: an image is a link with a ! prefix
+    text = _LINK.sub(r"\1", text)
+    text = _URL.sub("", text)
+    return text
+
+
 def _window(text):
     """Slide a CHUNK_TOKENS window with CHUNK_OVERLAP over the token stream."""
     tokens = _enc.encode(text)
@@ -87,9 +104,53 @@ def _paragraphs(text):
     return [part for part in parts if part.strip()]
 
 
-def chunk_file(path):
-    """One source file -> list of Chunks with gapless per-file idx."""
-    text = path.read_text(encoding="utf-8")
+def _shared_heading(headings):
+    """Longest common breadcrumb prefix: ("A > B", "A > C") -> "A"."""
+    paths = [heading.split(" > ") if heading else [] for heading in headings]
+    prefix = paths[0]
+    for path in paths[1:]:
+        keep = 0
+        while keep < len(prefix) and keep < len(path) and prefix[keep] == path[keep]:
+            keep += 1
+        prefix = prefix[:keep]
+    return " > ".join(prefix)
+
+
+def _merge(pieces):
+    """Pack neighboring (heading, text) pieces into chunks of up to
+    CHUNK_MERGE_TOKENS. Pieces stay whole — this only decides how many
+    share a chunk; a piece already over the target stands alone. The
+    merged heading is the pieces' shared breadcrumb prefix."""
+    merged = []
+    group = []  # pieces going into the chunk being built
+    group_tokens = 0
+    for heading, text in pieces:
+        piece_tokens = n_tokens(text)
+        if group and group_tokens + piece_tokens > config.CHUNK_MERGE_TOKENS:
+            merged.append(group)
+            group, group_tokens = [], 0
+        group.append((heading, text))
+        group_tokens += piece_tokens
+    if group:
+        merged.append(group)
+
+    combined = []
+    for group in merged:
+        heading = _shared_heading([heading for heading, _text in group])
+        text = "\n\n".join(text for _heading, text in group)
+        combined.append((heading, text))
+    return combined
+
+
+def chunk_file(path, source=None):
+    """One source file -> list of Chunks with gapless per-file idx.
+
+    source: name stored on each chunk (citations, BM25, embed prefix).
+    Defaults to the bare filename; ingest passes the corpus-relative path
+    so nested files with the same name stay distinguishable.
+    """
+    text = _clean(path.read_text(encoding="utf-8"))
+    source = source or path.name
 
     pieces = []  # (heading, text) pairs, before numbering
     if path.suffix.lower() == ".md":
@@ -101,9 +162,12 @@ def chunk_file(path):
             for window in _window(paragraph):
                 pieces.append(("", window))
 
+    if config.CHUNK_MERGE_TOKENS > 0:
+        pieces = _merge(pieces)
+
     chunks = []
     for heading, piece_text in pieces:
         if not piece_text.strip():
             continue  # skip empties before numbering so idx stays gapless
-        chunks.append(Chunk(source=path.name, heading=heading, text=piece_text, idx=len(chunks)))
+        chunks.append(Chunk(source=source, heading=heading, text=piece_text, idx=len(chunks)))
     return chunks

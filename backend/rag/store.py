@@ -107,7 +107,14 @@ class Store:
             )
 
         results = []
-        for row in best_first[:k]:
+        slots_used = {}  # source file -> chunks already selected
+        for row in best_first:
+            if len(results) == k:
+                break
+            source = self.chunks[row]["source"]
+            if config.TOP_K_PER_FILE and slots_used.get(source, 0) >= config.TOP_K_PER_FILE:
+                continue  # this file has enough slots; let the next-ranked file in
+            slots_used[source] = slots_used.get(source, 0) + 1
             hit = dict(self.chunks[row])  # copy so the stored chunk stays unmodified
             hit["score"] = float(sims[row])
             results.append(hit)
