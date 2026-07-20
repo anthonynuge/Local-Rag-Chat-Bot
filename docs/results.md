@@ -185,6 +185,15 @@ refusal 10 -> 12/12 vs its latest run). No regressions; both baselines
 re-locked. Still red: equipment cross-source, one trick refusal, the
 password poem — the last two are prompt work.
 
+Citation repair (2026-07-20, kept): `rag/cite.py`. The model sometimes
+states a fact correctly but tags it with a neighbor's number. After
+generation, each marker is checked against the chunk it points at: if that
+chunk contains none of the sentence's numbers or names and exactly one
+other packed chunk does, the marker is repointed to it. Ambiguous cases
+are left alone. Runs on the citations event, not the streamed text, so
+what the reader already saw stays put. Thornmere multi-turn 1/4 -> 2/4,
+clef unchanged, no regressions.
+
 Tested mistral-nemo:12b (2026-07-20): worse. Failing checks clef 3 -> 6,
 thornmere 6 -> 8, 25% slower. Better at answering (thornmere multi-turn
 1/4 -> 4/4, factual 21 -> 23/24) but it makes things up: invented a phone

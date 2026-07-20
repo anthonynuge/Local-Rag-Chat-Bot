@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from rag import budget, config, llm, store
+from rag import budget, cite, config, llm, store
 
 logging.basicConfig(level=config.LOG_LEVEL, format="%(levelname)s %(name)s | %(message)s")
 logger = logging.getLogger("rag.api")
@@ -121,6 +121,9 @@ def _stream(messages, citations, report):
         answer = "".join(deltas)
         # r"\[(\d+)\]" finds every [1], [2], ... marker and captures the number.
         cited_ids = {int(number) for number in re.findall(r"\[(\d+)\]", answer)}
+        citations, corrections = cite.fix(answer, citations)
+        for marker_id, was, now in corrections:
+            logger.info("citation [%d] repointed: %s -> %s", marker_id, was, now)
         cited = [citation for citation in citations if citation["id"] in cited_ids]
         yield _sse("citations", {"citations": cited})
 
