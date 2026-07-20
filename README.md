@@ -125,7 +125,7 @@ uv run pytest tests
 uv run python ../scripts/smoke.py
 
 # Quality rates vs the committed baseline (citation / refusal / multi-turn)
-uv run python ../scripts/eval.py ./data/sample-v3
+uv run python ../scripts/eval.py ./data/thornmere
 
 # Grade the latest eval run's answers with a local judge model
 uv run python ../scripts/judge.py

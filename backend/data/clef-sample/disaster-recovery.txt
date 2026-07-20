@@ -1,0 +1,14 @@
+Disaster Recovery Summary
+
+Recovery Time Objective (RTO): 4 hours
+
+Recovery Point Objective (RPO): 24 hours (backups run nightly; see the Data Backup Policy)
+
+Critical services:
+- Authentication
+- Email
+- Customer-facing site and API
+
+A disaster recovery exercise is conducted twice per year.
+
+One founder acts as incident lead during recovery operations; follow their instructions.

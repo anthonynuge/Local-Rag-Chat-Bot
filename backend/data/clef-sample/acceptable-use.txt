@@ -1,0 +1,17 @@
+Acceptable Use of Company Devices
+
+Company devices are provided primarily for business purposes.
+
+Limited personal use is fine as long as it:
+- Does not interfere with your work
+- Does not violate company policy (see Employee Privacy for what to expect about monitoring)
+- Does not consume excessive network resources
+
+The following are prohibited:
+- Installing software outside the software request process
+- Illegal downloads
+- Sharing credentials
+- Circumventing security controls
+- Connecting unknown USB devices
+
+Repeated violations will be addressed by the founders and may result in disciplinary action.

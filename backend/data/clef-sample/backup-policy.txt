@@ -1,0 +1,12 @@
+Data Backup Policy
+
+Critical production databases are backed up nightly.
+
+Backups are retained as follows:
+- Daily backups: 30 days
+- Weekly backups: 12 weeks
+- Monthly backups: 12 months
+
+Restore tests are performed quarterly to verify backup integrity.
+
+Only the founders may initiate a production restore.

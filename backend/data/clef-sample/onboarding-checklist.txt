@@ -1,0 +1,19 @@
+New Hire Checklist
+
+Before your first day (handled by us):
+- Signed offer letter and proprietary information agreement in your Personnel folder
+- Google Apps, Slack, and Trello accounts created
+- Two-factor authentication ready to set up with you
+- Desk set up with your equipment
+
+Your first day (starts at 10:00):
+- Set up your accounts and change your temporary password
+- Set up two-factor authentication
+- Join the team Slack channels
+- Push something public live (a commit, a design change, or a blog post)
+- Team lunch
+
+Your first weeks:
+- Review the employee handbook
+- Weekly 1:1 with the founder you report to
+- Background reading from the onboarding documents

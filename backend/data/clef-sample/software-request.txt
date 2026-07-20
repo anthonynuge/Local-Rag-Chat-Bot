@@ -1,0 +1,7 @@
+Software Requests
+
+To get new software on a company device:
+1. Ask the founder you report to, with a short business justification.
+2. Wait for their OK before installing.
+
+Software that needs elevated privileges or touches production systems must be approved by a founder and noted on the Security board on Trello.

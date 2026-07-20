@@ -1,0 +1,12 @@
+VPN Access
+
+When working remotely (see the Working Remotely policy), you must connect through the company VPN before accessing internal resources.
+
+VPN access requires:
+- A company-managed device
+- Two-factor authentication
+- The approved endpoint security software
+
+Inactive VPN sessions automatically disconnect after 30 minutes.
+
+VPN logs are retained for 180 days for security auditing.

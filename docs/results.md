@@ -118,6 +118,6 @@ head-on).
 
 ```bash
 cd backend
-uv run python ../scripts/eval.py ./data/sample-v3   # rates + run JSON
+uv run python ../scripts/eval.py ./data/thornmere   # rates + run JSON
 uv run python ../scripts/judge.py                    # grade newest run
 ```

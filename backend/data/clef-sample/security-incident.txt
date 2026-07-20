@@ -1,0 +1,18 @@
+Security Incident Reporting
+
+If you believe a security incident has occurred:
+1. Disconnect the affected device from the network if it is safe to do so.
+2. Do not delete files or logs.
+3. Tell the founders immediately, in person or by direct message on Slack.
+4. Write down everything you observed while it is fresh, and add a card to the Security board on Trello.
+5. Wait for instructions from the founders before attempting any cleanup.
+
+Examples of security incidents:
+- Phishing emails
+- Malware
+- Lost laptops
+- Unauthorized access
+- Exposed credentials
+- Suspicious login alerts
+
+Report incidents even if you are unsure whether anything malicious actually happened.

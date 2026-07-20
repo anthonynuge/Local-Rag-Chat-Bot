@@ -1,0 +1,44 @@
+{
+  "_README": "Question set for the Clef handbook corpus (sample-v4). 25 questions total. Same shape as sample-v3: `label` says what the question tests, `answer` is the short reference for eyeballing + scripts/judge.py. corpus/multi_turn entries use `expected_source` (single file) or `expected_sources` (list; every item must be cited; a nested list is an either-or group). Sources are corpus-relative paths because this dataset has subfolders. Labels: factual = single-fact lookup; cross-source = needs >=2 files; trick-false-premise = question embeds a false assumption the corpus corrects; trap-undocumented = sounds answerable but the fact is absent, must refuse; off-topic = out of scope, must refuse.",
+
+  "corpus": [
+    {"label": "factual", "question": "How many paid vacation days do Clef employees get per year?", "expected_source": "Benefits and Perks/Vacation and Sick Leave.md", "answer": "3 weeks (15 days), accruing 1.25 days per month."},
+    {"label": "factual", "question": "How long is Clef's new parent leave and when must it be taken?", "expected_source": "Benefits and Perks/New Parent Leave.md", "answer": "12 weeks paid, taken within a year of the birth or adoption."},
+    {"label": "factual", "question": "How much is the employee referral bonus?", "expected_source": "Benefits and Perks/Referral Bonuses.md", "answer": "$5,000 per hired referral."},
+    {"label": "factual", "question": "When does an employee become eligible for a sabbatical, and how long is it?", "expected_source": "Benefits and Perks/Sabbatical.md", "answer": "After every 5 years at Clef; one quarter (12 contiguous weeks), paid."},
+    {"label": "factual", "question": "What is the annual learning budget per employee?", "expected_source": "Benefits and Perks/Continuing Education.md", "answer": "$4,000 per year ($2,000 during the first year of implementation or for late-year joiners); does not roll over."},
+    {"label": "factual", "question": "What salary does the rubric give a technical hire with more than 5 years of experience?", "expected_source": "Employment Policies/Salary and Equity Compensation.md", "answer": "$120k."},
+    {"label": "factual", "question": "What is the minimum password length for company systems?", "expected_source": "password-policy.txt", "answer": "14 characters."},
+    {"label": "factual", "question": "After how long does an inactive VPN session disconnect?", "expected_source": "vpn-access.txt", "answer": "30 minutes."},
+    {"label": "factual", "question": "How soon after returning from a business trip must expense reports be submitted?", "expected_source": "travel-policy.txt", "answer": "Within 10 business days."},
+    {"label": "factual", "question": "How quickly must lost or stolen equipment be reported?", "expected_source": "equipment-checkout.txt", "answer": "Within 24 hours."},
+    {"label": "factual", "question": "How long are daily backups retained?", "expected_source": "backup-policy.txt", "answer": "30 days (weekly 12 weeks, monthly 12 months)."},
+    {"label": "factual", "question": "When do hack weeks happen at Clef?", "expected_source": "Operations Documents/Hack Weeks.md", "answer": "The sixth week of every quarter."},
+
+    {"label": "cross-source", "question": "I want to work from my partner's place in another city for a week. What approval do I need, and how do I reach internal systems from there?", "expected_sources": ["Employment Policies/Working Remotely.md", "vpn-access.txt"], "answer": "That's extended remote work (>2 consecutive days or an irregular place): manager approval at least two weeks in advance, team notice at least 7 days. Internal resources require the company VPN from a company-managed device with two-factor authentication and the approved endpoint security software."},
+    {"label": "cross-source", "question": "I'm an engineer starting next week. What equipment will I get, and what time does my first day start?", "expected_sources": ["equipment-checkout.txt", "Operations Documents/Onboarding.md"], "answer": "Laptop, monitor, keyboard, mouse, and charger, plus (engineering) a second monitor and a hardware security key. The first day starts at 10:00."},
+    {"label": "cross-source", "question": "Which systems require two-factor authentication, and what else is required to connect to the VPN?", "expected_sources": ["password-policy.txt", "vpn-access.txt"], "answer": "Two-factor auth: email (Google Apps), VPN, git hosting, payroll, administrative dashboards. The VPN additionally requires a company-managed device and the approved endpoint security software."},
+
+    {"label": "trick-false-premise", "question": "How many vacation days will I accrue during my 12-week sabbatical?", "expected_sources": [["Benefits and Perks/Sabbatical.md", "Benefits and Perks/New Parent Leave.md"]], "answer": "None. Paid time off of any kind, including sabbatical, does not accrue additional vacation, sick days, or sabbatical time."},
+    {"label": "trick-false-premise", "question": "What referral bonus does a founder get for referring a new hire?", "expected_source": "Benefits and Perks/Referral Bonuses.md", "answer": "Nothing — all employees except the founders are eligible for the $5,000 referral bonus."}
+  ],
+
+  "refusal": [
+    {"label": "trap-undocumented", "question": "How many unused vacation days can I roll over into next year?", "answer": "REFUSE - vacation rollover is not documented (only the learning budget's no-rollover rule is)."},
+    {"label": "trap-undocumented", "question": "What's the guest WiFi password at the Clef office?", "answer": "REFUSE - no WiFi credentials are in the corpus."},
+    {"label": "trap-undocumented", "question": "Which VPN vendor does Clef use?", "answer": "REFUSE - the VPN policy never names a vendor or product."},
+    {"label": "off-topic", "question": "Who won the 2018 FIFA World Cup?", "answer": "REFUSE - general knowledge, out of scope. Known leak: qwen answers famous facts from memory with a fabricated citation."},
+    {"label": "off-topic", "question": "Write me a short poem about strong passwords.", "answer": "REFUSE - creative task, not a corpus question."}
+  ],
+
+  "multi_turn": [
+    {
+      "name": "extended-remote-thread",
+      "turns": [
+        {"label": "factual", "question": "How many consecutive remote days count as extended remote work?", "expected_source": "Employment Policies/Working Remotely.md", "answer": "More than 2 consecutive days (or any work from an irregular place)."},
+        {"label": "factual", "question": "How far in advance do I need my manager's approval for that?", "expected_source": "Employment Policies/Working Remotely.md", "answer": "At least two weeks in advance, before making travel arrangements."},
+        {"label": "factual", "question": "And how much will Clef subsidize a co-working space?", "expected_source": "Employment Policies/Working Remotely.md", "answer": "Up to $10/day while Clef is on its seed extension."}
+      ]
+    }
+  ]
+}

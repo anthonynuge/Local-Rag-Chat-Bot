@@ -1,0 +1,18 @@
+Equipment Policy
+
+Every new employee arrives to a desk with their equipment already set up:
+- Laptop
+- Monitor
+- Keyboard
+- Mouse
+- Charger
+
+Engineering employees additionally receive:
+- A second monitor
+- A hardware security key
+
+Employees are responsible for company-issued equipment.
+
+Lost or stolen equipment must be reported to the founders within 24 hours.
+
+Equipment is returned when an employee leaves Clef.
